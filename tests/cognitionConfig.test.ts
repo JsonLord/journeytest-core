@@ -10,7 +10,7 @@ describe("runtime cognition configuration", () => {
     const cwd = await mkdtemp(join(tmpdir(), "cognition-config-"));
     await writeFile(join(cwd, ".env"), "COGNITION_PROFILE=local-cloud\nCLOUD_MAX_ATTEMPTS=2\n");
     await writeFile(join(cwd, ".env.local"), "COGNITION_PROFILE=dual-laya-cloud\nCLOUD_MAX_ATTEMPTS=3\n");
-    const config = loadRuntimeCognitionConfig({ cwd, env: { COGNITION_PROFILE: "local-spark-cloud", CLOUD_MAX_ATTEMPTS: "4", SPARK_OPENAI_BASE_URL: "http://spark.test/v1", LAYA_HOSTED_BASE_URL: "https://hosted.test", REASONING_PROVIDER: "openai", REASONING_MODEL: "test", CLOUD_REASONING_ENABLED: "true" }, overrides: { COGNITION_PROFILE: "dual-laya-spark-cloud", CLOUD_MAX_ATTEMPTS: 5 } });
+    const config = loadRuntimeCognitionConfig({ cwd, env: { COGNITION_PROFILE: "local-spark-cloud", CLOUD_MAX_ATTEMPTS: "4", SPARK_OPENAI_BASE_URL: "http://spark.test/v1", LAYA_HOSTED_BASE_URL: "https://hosted.test", REASONING_PROVIDER: "openai", REASONING_MODEL: "gpt-4o-mini", OPENAI_API_KEY: "test-key", CLOUD_REASONING_ENABLED: "true" }, overrides: { COGNITION_PROFILE: "dual-laya-spark-cloud", CLOUD_MAX_ATTEMPTS: 5 } });
     expect(config.profile).toBe("dual-laya-spark-cloud"); expect(config.cloud.maxAttempts).toBe(5); expect(config.source.envFiles).toHaveLength(2);
   });
   it("handles absent files and rejects malformed values", async () => {
@@ -29,7 +29,7 @@ describe("runtime cognition configuration", () => {
 
 describe("profile-aware credentials", () => {
   it("requires only the selected cloud provider credential in diagnostics", () => {
-    const openai = loadRuntimeCognitionConfig({ env: { CLOUD_REASONING_ENABLED: "true", REASONING_PROVIDER: "openai", REASONING_MODEL: "model", ANTHROPIC_API_KEY: "wrong" } });
+    const openai = loadRuntimeCognitionConfig({ env: { CLOUD_REASONING_ENABLED: "true", REASONING_PROVIDER: "openai", REASONING_MODEL: "gpt-4o-mini", ANTHROPIC_API_KEY: "wrong" } });
     expect(cognitionConfigStatus(openai, {}).credentialDiagnostics.required).toEqual(["OPENAI_API_KEY"]);
     const disabled = loadRuntimeCognitionConfig({ env: { CLOUD_REASONING_ENABLED: "false" } });
     expect(cognitionConfigStatus(disabled, {}).credentialDiagnostics.required).toEqual([]);

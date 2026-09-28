@@ -69,8 +69,16 @@ warning rather than failing readiness. Native `SPACE_ID`, `SPACE_HOST`, and
 `SYSTEM=spaces` markers detect Spaces—there are no `HF_PROFILE` or `HF_SPACE`
 requirements.
 
+Note: `OPENAI_MODEL` and `OPENAI_BASE_URL` are not used by cloud Pi reasoning.
+`REASONING_MODEL` is the canonical cloud reasoning model variable. Self-hosted
+OpenAI-compatible endpoints use `SPARK_OPENAI_BASE_URL` and `SPARK_MODEL`.
+
 Only the selected cloud provider credential is expected: `OPENAI_API_KEY` for
 OpenAI, `ANTHROPIC_API_KEY` for Anthropic, or `GEMINI_API_KEY` for Gemini.
+Supported provider identifiers in the installed `@earendil-works/pi-ai` registry
+include: `openai`, `anthropic`, `google` (or `gemini`), `amazon-bedrock`,
+`openrouter`, `mistral`, `deepseek`, `groq`, `cerebras`, and `together`.
+
 Endpoint keys are optional by default. Set `LAYA_HOSTED_AUTH_REQUIRED=true`,
 `LAYA_VISION_AUTH_REQUIRED=true`, or `SPARK_AUTH_REQUIRED=true` only when that
 enabled endpoint actually requires authentication. Empty and whitespace-only

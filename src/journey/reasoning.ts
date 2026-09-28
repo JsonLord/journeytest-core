@@ -52,13 +52,28 @@ export interface ReasoningController {
   finalize(input: ReasoningFinalInput): Promise<ReasoningResponse<ReasoningVerdict>>;
 }
 
+export function resolveReasoningModel(provider?: string, modelId?: string): Model<any> {
+  if (!provider || !modelId) {
+    throw new Error(`Reasoning provider and model must both be specified (got provider=${provider ?? "undefined"}, model=${modelId ?? "undefined"}).`);
+  }
+  const model = getModel(provider as KnownProvider, modelId as never);
+  if (!model) {
+    throw new Error(
+      `Unsupported reasoning model configuration: provider=${provider} model=${modelId}\nThe installed pi-ai version does not expose this provider/model pair.`
+    );
+  }
+  return model;
+}
+
 export interface PiReasoningControllerOptions { provider?: Provider; modelId?: string; model?: Model<any>; thinkingLevel?: "low" | "medium" | "high"; getApiKey?: (provider: string) => Promise<string | undefined> | string | undefined }
 export class PiReasoningController implements ReasoningController {
   readonly provider: string; readonly model: string;
   private readonly piModel: Model<any>; private readonly thinkingLevel: "low" | "medium" | "high"; private retryInstruction?: string;
   constructor(private readonly options: PiReasoningControllerOptions) {
-    this.piModel = options.model ?? getModel(options.provider as KnownProvider, options.modelId as never);
+    this.piModel = options.model ?? resolveReasoningModel(options.provider, options.modelId);
     this.provider = this.piModel.provider; this.model = this.piModel.id; this.thinkingLevel = options.thinkingLevel ?? "medium";
+    console.error(`Reasoning provider: ${this.provider}`);
+    console.error(`Reasoning model: ${this.model}`);
   }
   async initialize(context: ReasoningInitContext) {
     const response = await this.prompt(ReasoningStateSchema, `Interpret the goal into explicit, cheaply observable success criteria and a compact initial subgoal. Preserve caller criteria exactly and add only strongly implied criteria.\n${JSON.stringify({ goal: context.goal, caller_success_criteria: context.successCriteria, context: context.context })}`, context.signal);
