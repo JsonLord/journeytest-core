@@ -1,6 +1,7 @@
 import { chmodSync, existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { z } from "zod";
+import { resolveReasoningModel } from "../journey/reasoning.js";
 import { isHuggingFaceSpace } from "./config.js";
 
 export const CognitionProfileSchema = z.enum(["local-cloud", "local-spark-cloud", "dual-laya-cloud", "dual-laya-spark-cloud"]);
@@ -24,7 +25,17 @@ export const RuntimeCognitionConfigSchema = z.object({
   if (value.hostedLaya.enabled && value.hostedLaya.authRequired && !value.hostedLaya.apiKey) ctx.addIssue({ code: "custom", path: ["hostedLaya", "apiKey"], message: "LAYA_HOSTED_API_KEY is required because hosted authentication is enabled" });
   if (value.layaVision.enabled && value.layaVision.authRequired && !value.layaVision.apiKey) ctx.addIssue({ code: "custom", path: ["layaVision", "apiKey"], message: "LAYA_VISION_API_KEY is required because Vision authentication is enabled" });
   if (value.spark.enabled && value.spark.authRequired && !value.spark.apiKey) ctx.addIssue({ code: "custom", path: ["spark", "apiKey"], message: "SPARK_OPENAI_API_KEY is required because Spark authentication is enabled" });
-  if (value.cloud.enabled && (!value.cloud.provider || !value.cloud.model)) ctx.addIssue({ code: "custom", path: ["cloud"], message: "REASONING_PROVIDER and REASONING_MODEL are required when cloud reasoning is enabled" });
+  if (value.cloud.enabled) {
+    if (!value.cloud.provider || !value.cloud.model) {
+      ctx.addIssue({ code: "custom", path: ["cloud"], message: "REASONING_PROVIDER and REASONING_MODEL are required when cloud reasoning is enabled" });
+    } else {
+      try {
+        resolveReasoningModel(value.cloud.provider, value.cloud.model);
+      } catch (err) {
+        ctx.addIssue({ code: "custom", path: ["cloud"], message: err instanceof Error ? err.message : String(err) });
+      }
+    }
+  }
 });
 export type RuntimeCognitionConfig = z.infer<typeof RuntimeCognitionConfigSchema>;
 export type RuntimeCognitionOverrides = Partial<Record<string, string | number | boolean | undefined>>;
@@ -54,9 +65,46 @@ function parseBoolean(name: string, value: string | undefined, fallback: boolean
 function parseNumber(name: string, value: string | undefined, fallback: number) { if (value === undefined || value === "") return fallback; const parsed = Number(value); if (!Number.isFinite(parsed)) throw new Error(`${name} must be a number`); return parsed; }
 function readEnvFile(path: string) { if (!existsSync(path)) return { path, loaded: false, values: {} as Record<string, string> }; const values: Record<string, string> = {}; for (const raw of readFileSync(path, "utf8").split(/\r?\n/)) { const line = raw.trim(); if (!line || line.startsWith("#")) continue; const match = line.match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/); if (!match) throw new Error(`Invalid dotenv line in ${path}: ${raw}`); let value = match[2].trim(); if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1).replace(/\\n/g, "\n"); values[match[1]] = value; } return { path, loaded: true, values }; }
 
-export function cognitionConfigStatus(config: RuntimeCognitionConfig, env: NodeJS.ProcessEnv = process.env) { const host = (url?: string) => url ? new URL(url).host : undefined; const diagnostics = credentialDiagnostics(config, env); return { source: config.source, cognitionProfile: config.profile, enabledBackends: { localLaya: true, hostedLaya: config.hostedLaya.enabled, layaVision: config.layaVision.enabled, spark: config.spark.enabled, cloud: config.cloud.enabled }, endpoints: { localLaya: host(config.localLaya.endpoint), hostedLaya: host(config.hostedLaya.baseUrl), layaVision: host(config.layaVision.baseUrl), spark: host(config.spark.baseUrl) }, credentials: { openai: Boolean(config.credentials.openai), anthropic: Boolean(config.credentials.anthropic), gemini: Boolean(config.credentials.gemini), hostedLaya: Boolean(config.hostedLaya.apiKey), layaVision: Boolean(config.layaVision.apiKey), spark: Boolean(config.spark.apiKey), huggingFace: Boolean(empty(env.HF_TOKEN)) }, credentialDiagnostics: diagnostics }; }
+export function cognitionConfigStatus(config: RuntimeCognitionConfig, env: NodeJS.ProcessEnv = process.env) {
+  const host = (url?: string) => url ? new URL(url).host : undefined;
+  const diagnostics = credentialDiagnostics(config, env);
+
+  let modelResolved = false;
+  let modelReason: string | undefined;
+  if (config.cloud.enabled && config.cloud.provider && config.cloud.model) {
+    try {
+      resolveReasoningModel(config.cloud.provider, config.cloud.model);
+      modelResolved = true;
+    } catch {
+      modelResolved = false;
+      modelReason = "unsupported_provider_model";
+    }
+  }
+
+  const reqName = cloudCredentialName(config.cloud.provider);
+  const credentialConfigured = reqName ? Boolean(credentialFor(config, reqName)) : false;
+
+  const reasoning = {
+    enabled: config.cloud.enabled,
+    provider: config.cloud.provider ?? null,
+    model: config.cloud.model ?? null,
+    model_resolved: modelResolved,
+    ...(modelReason ? { reason: modelReason } : {}),
+    credential_configured: credentialConfigured,
+  };
+
+  return {
+    source: config.source,
+    cognitionProfile: config.profile,
+    enabledBackends: { localLaya: true, hostedLaya: config.hostedLaya.enabled, layaVision: config.layaVision.enabled, spark: config.spark.enabled, cloud: config.cloud.enabled },
+    endpoints: { localLaya: host(config.localLaya.endpoint), hostedLaya: host(config.hostedLaya.baseUrl), layaVision: host(config.layaVision.baseUrl), spark: host(config.spark.baseUrl) },
+    credentials: { openai: Boolean(config.credentials.openai), anthropic: Boolean(config.credentials.anthropic), gemini: Boolean(config.credentials.gemini), hostedLaya: Boolean(config.hostedLaya.apiKey), layaVision: Boolean(config.layaVision.apiKey), spark: Boolean(config.spark.apiKey), huggingFace: Boolean(empty(env.HF_TOKEN)) },
+    reasoning,
+    credentialDiagnostics: diagnostics
+  };
+}
 export function credentialDiagnostics(config: RuntimeCognitionConfig, env: NodeJS.ProcessEnv = process.env) { const required: string[] = []; const warnings: string[] = []; if (config.cloud.enabled) { const name = cloudCredentialName(config.cloud.provider); if (name && !credentialFor(config, name)) required.push(name); } if (config.hostedLaya.enabled && config.hostedLaya.authRequired && !config.hostedLaya.apiKey) required.push("LAYA_HOSTED_API_KEY"); if (config.layaVision.enabled && config.layaVision.authRequired && !config.layaVision.apiKey) required.push("LAYA_VISION_API_KEY"); if (config.spark.enabled && config.spark.authRequired && !config.spark.apiKey) required.push("SPARK_OPENAI_API_KEY"); if (isHuggingFaceSpace(env) && !empty(env.HF_TOKEN)) warnings.push("HF_TOKEN is not configured; public Hugging Face resources remain available without authentication"); return { required, warnings, huggingFaceToken: empty(env.HF_TOKEN) ? "configured" : "optional-unconfigured" }; }
-function cloudCredentialName(provider?: string) { if (!provider) return undefined; if (/anthropic/i.test(provider)) return "ANTHROPIC_API_KEY"; if (/gemini|google/i.test(provider)) return "GEMINI_API_KEY"; if (/openai/i.test(provider)) return "OPENAI_API_KEY"; return undefined; }
+export function cloudCredentialName(provider?: string) { if (!provider) return undefined; if (/anthropic/i.test(provider)) return "ANTHROPIC_API_KEY"; if (/gemini|google/i.test(provider)) return "GEMINI_API_KEY"; if (/openai/i.test(provider)) return "OPENAI_API_KEY"; return undefined; }
 function credentialFor(config: RuntimeCognitionConfig, name: string) { if (name === "OPENAI_API_KEY") return config.credentials.openai; if (name === "ANTHROPIC_API_KEY") return config.credentials.anthropic; if (name === "GEMINI_API_KEY") return config.credentials.gemini; return undefined; }
 export function saveLocalCognitionConfig(updates: Record<string, string>, options: { cwd?: string; env?: NodeJS.ProcessEnv } = {}) { if (isHuggingFaceSpace(options.env ?? process.env)) throw new Error("Hugging Face Space configuration is environment-only; use Space Settings → Repository secrets"); const cwd = resolve(options.cwd ?? process.cwd()); const path = join(cwd, ".env.local"); const existing = existsSync(path) ? readFileSync(path, "utf8").split(/\r?\n/) : []; const pending = new Map(Object.entries(updates)); const output = existing.map(line => { const key = line.match(/^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=/)?.[1]; if (!key || !pending.has(key)) return line; const value = pending.get(key)!; pending.delete(key); return `${key}=${dotenvQuote(value)}`; }); for (const [key, value] of pending) output.push(`${key}=${dotenvQuote(value)}`); const temp = join(dirname(path), `.env.local.${process.pid}.tmp`); writeFileSync(temp, `${output.join("\n").replace(/\n+$/, "")}\n`, { mode: 0o600 }); chmodSync(temp, 0o600); renameSync(temp, path); chmodSync(path, 0o600); return path; }
 function dotenvQuote(value: string) { return /^[A-Za-z0-9_./:@-]*$/.test(value) ? value : JSON.stringify(value); }

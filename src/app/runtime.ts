@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { AgentBrowserDriver } from "../drivers/agent-browser/index.js";
 import { DefaultCognitionRouter, JourneyRunner, JourneyService, LayaAgent, OpenAICompatibleReasoningController, PiReasoningController, RetryingReasoningController, SystemOneRemoteBackend } from "../journey/index.js";
-import { loadRuntimeCognitionConfig, RuntimeCognitionConfigSchema, type RuntimeCognitionConfig, type RuntimeCognitionOverrides } from "./cognitionConfig.js";
+import { cloudCredentialName, loadRuntimeCognitionConfig, RuntimeCognitionConfigSchema, type RuntimeCognitionConfig, type RuntimeCognitionOverrides } from "./cognitionConfig.js";
 import { nonnegativeEnv, positiveEnv } from "./config.js";
 export interface RuntimeOptions { outputDir?: string; endpoint?: string; model?: string; revision?: string; config?: RuntimeCognitionConfig; cognitionOverrides?: RuntimeCognitionOverrides; cwd?: string }
 export function createJourneyRuntime(options: RuntimeOptions = {}) {
@@ -28,9 +28,16 @@ function createCognitionComponents(config: RuntimeCognitionConfig, endpoint: str
   const visionAgent = visionBackend ? new LayaAgent({ backend: visionBackend, model: config.localLaya.model }) : undefined;
   const sparkBase = config.spark.enabled && config.spark.baseUrl ? new OpenAICompatibleReasoningController({ baseUrl: config.spark.baseUrl, apiKey: config.spark.apiKey, model: config.spark.model, timeoutMs: config.spark.timeoutMs }) : undefined;
   const spark = sparkBase ? new RetryingReasoningController(sparkBase, { backend: "spark", maxAttempts: config.spark.maxAttempts, timeoutMs: config.spark.timeoutMs, retryBaseMs: 100 }) : undefined;
+  if (config.cloud.enabled) {
+    const reqName = cloudCredentialName(config.cloud.provider);
+    const key = apiKeyFor(config.cloud.provider ?? "", config);
+    if (reqName && !key) {
+      throw new Error(`Cloud reasoning credential missing: ${reqName} is required when CLOUD_REASONING_ENABLED=true`);
+    }
+  }
   const cloudBase = config.cloud.enabled ? new PiReasoningController({ provider: config.cloud.provider as never, modelId: config.cloud.model!, thinkingLevel: config.cloud.thinkingLevel, getApiKey: provider => apiKeyFor(provider, config) }) : undefined;
   const cloud = cloudBase ? new RetryingReasoningController(cloudBase, { backend: "cloud", maxAttempts: config.cloud.maxAttempts, timeoutMs: config.cloud.timeoutMs, retryBaseMs: config.cloud.retryBaseMs }) : undefined;
   return { backend, hostedBackend, visionBackend, localAgent, reasoningAvailable: Boolean(spark || cloud), router: new DefaultCognitionRouter({ config, localLaya: localAgent, hostedLaya: hostedAgent, vision: visionAgent, spark, cloud }) };
 }
 function systemOneUrl(base: string) { const url = new URL(base); if (!url.pathname || url.pathname === "/") url.pathname = "/v1/systemone"; return url.toString(); }
-function apiKeyFor(provider: string, config: RuntimeCognitionConfig) { if (/anthropic/i.test(provider)) return config.credentials.anthropic; if (/gemini|google/i.test(provider)) return config.credentials.gemini; if (/openai/i.test(provider)) return config.credentials.openai; return undefined; }
+export function apiKeyFor(provider: string, config: RuntimeCognitionConfig) { if (/anthropic/i.test(provider)) return config.credentials.anthropic; if (/gemini|google/i.test(provider)) return config.credentials.gemini; if (/openai/i.test(provider)) return config.credentials.openai; return undefined; }

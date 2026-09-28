@@ -87,7 +87,8 @@ import type { BookmarkCurator } from "./curation/types.js";
 import { spawn } from "node:child_process";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { cognitionConfigStatus, createApiServer, createJourneyRuntime, isHuggingFaceSpace, loadRuntimeCognitionConfig, ManagedLayaService, resolveLayaMode, assertSafeJourneyNetwork, assertSafeRedirectChain } from "./app/index.js";
+import { cognitionConfigStatus, createApiServer, createJourneyRuntime, isHuggingFaceSpace, loadRuntimeCognitionConfig, ManagedLayaService, resolveLayaMode, assertSafeJourneyNetwork, assertSafeRedirectChain, apiKeyFor } from "./app/index.js";
+import { PiReasoningController } from "./journey/index.js";
 
 export interface RunCliOptions {
   factories?: JourneyTestFactoryRegistry;
@@ -1117,7 +1118,7 @@ export async function runCli(
 
   for (const name of ["serve", "ui", "space"] as const) program.command(name).description(`${name} the JourneyTest service.`).option("--host <host>", "Bind host.", "0.0.0.0").option("--port <port>", "Bind port.", "7860").option("--cognition-profile <profile>", "Runtime-only cognition profile override.").action(async (options: { host: string; port: string; cognitionProfile?: string }) => runServerCommand(name, options));
   program.command("info").description("Print JourneyTest runtime information without secret values.").option("--json", "Print JSON.").action(async (options: { json?: boolean }) => { const config = loadRuntimeCognitionConfig(); const data = { version: "0.1.2", space: isHuggingFaceSpace(), layaMode: config.localLaya.mode, ...cognitionConfigStatus(config) }; options.json ? process.stdout.write(`${JSON.stringify(data)}\n`) : process.stdout.write(`${JSON.stringify(data, null, 2)}\n`); });
-  program.command("doctor").description("Check browser, Laya, artifacts, and service dependencies.").option("--smoke-model", "Require a ready SystemOne endpoint without downloading a model.").option("--json", "Print machine-readable diagnostics.").action(async (options: { smokeModel?: boolean; json?: boolean }) => runDoctor(Boolean(options.smokeModel), Boolean(options.json)));
+  program.command("doctor").description("Check browser, Laya, artifacts, and service dependencies.").option("--smoke-model", "Require a ready SystemOne endpoint without downloading a model.").option("--smoke-reasoning", "Run a live smoke test against configured cloud reasoning.").option("--json", "Print machine-readable diagnostics.").action(async (options: { smokeModel?: boolean; smokeReasoning?: boolean; json?: boolean }) => runDoctor(Boolean(options.smokeModel), Boolean(options.json), Boolean(options.smokeReasoning)));
 
   await program.parseAsync(argv);
 }
@@ -2680,7 +2681,7 @@ async function runServerCommand(name: "serve" | "ui" | "space", options: { host:
   child?.kill("SIGTERM"); await new Promise<void>(resolveClose => server.close(() => resolveClose())); await runtime.backend.close(); await managed?.stop();
 }
 
-async function runDoctor(smokeModel = false, json = false) {
+async function runDoctor(smokeModel = false, json = false, smokeReasoning = false) {
   const checks: Array<{ name: string; ok: boolean; detail: string }> = [];
   checks.push({ name: "JourneyTest version", ok: true, detail: "0.1.2" }); checks.push({ name: "Node version", ok: true, detail: process.version }); checks.push({ name: "environment", ok: true, detail: isHuggingFaceSpace() ? "Hugging Face Space" : "local" }); checks.push({ name: "Space detection", ok: true, detail: isHuggingFaceSpace() ? "yes" : "no" });
   try { const { stdout } = await promisify(execFile)(process.env.JOURNEYTEST_PYTHON ?? "python3", ["--version"]); checks.push({ name: "Python", ok: true, detail: stdout.trim() }); } catch (error) { checks.push({ name: "Python", ok: false, detail: String(error) }); }
@@ -2690,6 +2691,28 @@ async function runDoctor(smokeModel = false, json = false) {
   try { await mkdir(resolve(process.env.JOURNEYTEST_OUTPUT ?? "runs"), { recursive: true }); await access(resolve(process.env.JOURNEYTEST_OUTPUT ?? "runs")); checks.push({ name: "artifact directory", ok: true, detail: resolve(process.env.JOURNEYTEST_OUTPUT ?? "runs") }); } catch (error) { checks.push({ name: "artifact directory", ok: false, detail: String(error) }); }
   checks.push({ name: "Laya backend", ok: true, detail: process.env.LAYA_BACKEND ?? "torch" }); checks.push({ name: "Laya checkpoint", ok: true, detail: process.env.LAYA_MODEL_REPO ?? "ichenney/laya-browser-v32b" }); checks.push({ name: "checkpoint revision", ok: true, detail: process.env.LAYA_MODEL_REVISION ?? "unpinned at runtime" }); const runtime = createJourneyRuntime(); const health = await runtime.backend.health(); checks.push({ name: "SystemOne endpoint", ok: health.ok, detail: `${runtime.endpoint} (${health.backend ?? health.detail ?? "unavailable"})` });
   if (smokeModel && health.ok) { try { const smoke = await runtime.backend.infer({ state: { page: { url: "about:blank", title: "Doctor", text: "Ready" }, recent_actions: [] }, questions: { operation: { type: "choice", instructions: "Readiness smoke test", criteria: { DONE: "Ready", BLOCKED: "Not ready" } } } }); checks.push({ name: "model readiness", ok: true, detail: `${smoke.backend}, ${smoke.latencyMs} ms` }); } catch (error) { checks.push({ name: "model readiness", ok: false, detail: error instanceof Error ? error.message : String(error) }); } } else checks.push({ name: "model readiness", ok: !smokeModel, detail: smokeModel ? "SystemOne endpoint unavailable" : "not loaded (no unexpected download)" }); checks.push({ name: "API dependencies", ok: true, detail: "node:http; Gradio/FastAPI checked by ui/space startup" });
+
+  const reasoningStatus = cognitionConfigStatus(runtime.config).reasoning;
+  if (runtime.config.cloud.enabled) {
+    checks.push({ name: "cloud reasoning resolution", ok: reasoningStatus.model_resolved, detail: reasoningStatus.model_resolved ? `${reasoningStatus.provider}/${reasoningStatus.model}` : "unsupported_provider_model" });
+    checks.push({ name: "cloud reasoning credential", ok: reasoningStatus.credential_configured, detail: reasoningStatus.credential_configured ? "configured" : "missing credential" });
+    if (smokeReasoning) {
+      if (reasoningStatus.model_resolved && reasoningStatus.credential_configured) {
+        try {
+          const controller = new PiReasoningController({ provider: runtime.config.cloud.provider as never, modelId: runtime.config.cloud.model!, thinkingLevel: runtime.config.cloud.thinkingLevel, getApiKey: provider => apiKeyFor(provider, runtime.config) });
+          const res = await controller.initialize({ goal: "Doctor smoke test", successCriteria: [], context: {}, signal: AbortSignal.timeout(15_000) });
+          checks.push({ name: "cloud reasoning smoke", ok: Boolean(res.value), detail: `success (${res.metadata.latencyMs} ms)` });
+        } catch (error) {
+          checks.push({ name: "cloud reasoning smoke", ok: false, detail: error instanceof Error ? error.message : String(error) });
+        }
+      } else {
+        checks.push({ name: "cloud reasoning smoke", ok: false, detail: "cannot smoke: unresolved model or missing credential" });
+      }
+    }
+  } else {
+    checks.push({ name: "cloud reasoning", ok: true, detail: "disabled" });
+  }
+
   const disk = await statfs(resolve(process.env.JOURNEYTEST_OUTPUT ?? "runs")); checks.push({ name: "available disk", ok: disk.bavail > 0, detail: `${Math.round(Number(disk.bavail * disk.bsize) / 1024 ** 3)} GiB` }); checks.push({ name: "available memory", ok: freemem() > 0, detail: `${Math.round(freemem() / 1024 ** 3)} / ${Math.round(totalmem() / 1024 ** 3)} GiB` });
   if (json) process.stdout.write(`${JSON.stringify({ ok: checks.every(check => check.ok), checks })}\n`); else for (const check of checks) console.log(`${check.ok ? "OK" : "FAIL"} ${check.name}: ${check.detail}`); if (checks.some(check => !check.ok)) process.exitCode = 1;
 }
