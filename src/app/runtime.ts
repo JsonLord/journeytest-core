@@ -1,11 +1,12 @@
 import { resolve } from "node:path";
 import { AgentBrowserDriver } from "../drivers/agent-browser/index.js";
 import { DefaultCognitionRouter, JourneyRunner, JourneyService, LayaAgent, OpenAICompatibleReasoningController, PiReasoningController, RetryingReasoningController, SystemOneRemoteBackend } from "../journey/index.js";
-import { loadRuntimeCognitionConfig, RuntimeCognitionConfigSchema, type RuntimeCognitionConfig, type RuntimeCognitionOverrides } from "./cognitionConfig.js";
+import { assertCloudReasoningConfiguration, loadRuntimeCognitionConfig, RuntimeCognitionConfigSchema, type RuntimeCognitionConfig, type RuntimeCognitionOverrides } from "./cognitionConfig.js";
 import { nonnegativeEnv, positiveEnv } from "./config.js";
 export interface RuntimeOptions { outputDir?: string; endpoint?: string; model?: string; revision?: string; config?: RuntimeCognitionConfig; cognitionOverrides?: RuntimeCognitionOverrides; cwd?: string }
 export function createJourneyRuntime(options: RuntimeOptions = {}) {
   const config = options.config ?? loadRuntimeCognitionConfig({ cwd: options.cwd, overrides: options.cognitionOverrides });
+  assertCloudReasoningConfiguration(config);
   const endpoint = options.endpoint ?? config.localLaya.endpoint;
   const primary = createCognitionComponents(config, endpoint, options);
   const service = new JourneyService((request, sessionSecrets) => {

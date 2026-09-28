@@ -95,3 +95,26 @@ output failures, use exponential backoff with jitter, and emit attempt metadata.
 Exhaustion raises a structured failure rather than granting Laya authority.
 Keys, authorization headers, and provider error bodies are not included in
 JourneyResult evidence.
+
+## Pi provider and model resolution
+
+The installed `@earendil-works/pi-ai` version is `0.79.4`. JourneyTest resolves
+Pi models against that package's live `getProviders()` and `getModels()`
+registry before starting Laya, the browser, or Gradio. The provider identifiers
+for the primary cloud paths are `openai`, `anthropic`, and `google` (Gemini).
+Model IDs must exactly match the selected provider's installed registry;
+`journeytest info --json` reports `model_resolved`, and `journeytest doctor
+--json` checks resolution without making a paid request. Use
+`--smoke-reasoning` only when an explicit live request is wanted.
+
+For example, `openai/gpt-4.1-mini` is present in the installed registry. This is
+verified from the package at test/runtime rather than maintained in a duplicate
+hard-coded allowlist. Unsupported pairs fail with the provider, model, failure
+category, and registry-derived supported values, never with an undefined-model
+property access.
+
+`REASONING_MODEL` is the only JourneyTest cloud model variable. `OPENAI_MODEL`
+is ignored. `OPENAI_BASE_URL` is also ignored by the Pi cloud path and must not
+be used to point Pi at Spark. Spark continues to use `SPARK_OPENAI_BASE_URL`.
+The separately explicit `OPENAI_COMPATIBLE_URL` selects JourneyTest's strict
+OpenAI-compatible reasoning transport when that behavior is intended.

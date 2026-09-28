@@ -89,6 +89,13 @@ flag is enabled. `HF_TOKEN` is recommended for authenticated Hugging Face model
 downloads but is only required for private or gated resources; public models
 continue without it.
 
+Pi-backed cloud reasoning validates `REASONING_PROVIDER` and
+`REASONING_MODEL` against the model registry in the installed `pi-ai` package.
+Use provider ids `openai`, `anthropic`, or `google` for the corresponding cloud
+services. `OPENAI_MODEL` and generic `OPENAI_BASE_URL` are not JourneyTest
+reasoning configuration; use canonical `REASONING_MODEL`, or the explicit
+`OPENAI_COMPATIBLE_URL` when selecting a compatible endpoint.
+
 ## Documentation
 
 Durable project documentation lives in the OKF-style bundle under [`docs/`](docs/index.md)

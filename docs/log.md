@@ -2,6 +2,9 @@
 
 ## 2026-09-28
 
+- Replaced undefined Pi model dereferences with registry-backed provider/model
+  validation, fail-fast cloud credential checks, safe info/doctor diagnostics,
+  and an opt-in live reasoning smoke.
 - Added `OPENAI_COMPATIBLE_URL` cloud reasoning support using `OPENAI_API_KEY`, including Hugging Face Space environment/secret discovery and secret-free endpoint status.
 
 - Fixed Space UI startup by declaring every credential control before callback

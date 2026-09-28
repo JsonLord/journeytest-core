@@ -1,5 +1,6 @@
 import { Agent } from "@earendil-works/pi-agent-core";
-import { getModel, type KnownProvider, type Model, type Provider } from "@earendil-works/pi-ai";
+import { type Model, type Provider } from "@earendil-works/pi-ai";
+import { resolveReasoningModel } from "../directors/pi/modelResolution.js";
 import { z } from "zod";
 import { extractJsonObject } from "../utils/text.js";
 import type { AgentDecision, Observation } from "./types.js";
@@ -57,7 +58,7 @@ export class PiReasoningController implements ReasoningController {
   readonly provider: string; readonly model: string;
   private readonly piModel: Model<any>; private readonly thinkingLevel: "low" | "medium" | "high"; private retryInstruction?: string;
   constructor(private readonly options: PiReasoningControllerOptions) {
-    this.piModel = options.model ?? getModel(options.provider as KnownProvider, options.modelId as never);
+    this.piModel = options.model ?? resolveReasoningModel(String(options.provider ?? ""), options.modelId);
     this.provider = this.piModel.provider; this.model = this.piModel.id; this.thinkingLevel = options.thinkingLevel ?? "medium";
   }
   async initialize(context: ReasoningInitContext) {
