@@ -1,0 +1,7 @@
+{
+  "ready": true,
+  "laya": {
+    "ok": true,
+    "backend": "laya-torch"
+  }
+}

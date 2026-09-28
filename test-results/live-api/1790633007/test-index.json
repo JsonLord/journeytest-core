@@ -1,0 +1,398 @@
+[
+  {
+    "id": "META-001",
+    "name": "Health endpoint",
+    "category": "api_surface",
+    "status": "pass",
+    "duration_ms": 237,
+    "evidence": [
+      "responses/META-001.json"
+    ]
+  },
+  {
+    "id": "META-002",
+    "name": "Ready endpoint",
+    "category": "api_surface",
+    "status": "pass",
+    "duration_ms": 152,
+    "evidence": [
+      "responses/META-002.json"
+    ]
+  },
+  {
+    "id": "META-003",
+    "name": "Info endpoint",
+    "category": "api_surface",
+    "status": "pass",
+    "duration_ms": 160,
+    "evidence": [
+      "responses/META-003.json"
+    ]
+  },
+  {
+    "id": "META-004",
+    "name": "OpenAPI JSON endpoint",
+    "category": "api_surface",
+    "status": "pass",
+    "duration_ms": 123,
+    "evidence": [
+      "responses/META-004.json"
+    ]
+  },
+  {
+    "id": "API-001",
+    "name": "Root page",
+    "category": "api_surface",
+    "status": "pass",
+    "duration_ms": 112,
+    "evidence": [
+      "responses/API-001.json"
+    ]
+  },
+  {
+    "id": "API-002",
+    "name": "Docs page",
+    "category": "api_surface",
+    "status": "pass",
+    "duration_ms": 93,
+    "evidence": [
+      "responses/API-002.json"
+    ]
+  },
+  {
+    "id": "API-003",
+    "name": "API Docs page",
+    "category": "api_surface",
+    "status": "pass",
+    "duration_ms": 142,
+    "evidence": [
+      "responses/API-003.json"
+    ]
+  },
+  {
+    "id": "API-004",
+    "name": "Simple health endpoint",
+    "category": "api_surface",
+    "status": "fail",
+    "duration_ms": 90,
+    "evidence": [
+      "responses/API-004.json"
+    ]
+  },
+  {
+    "id": "JRN-001",
+    "name": "Deterministic Example Domain Journey",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 98,
+    "evidence": [
+      "requests/JRN-001_create_req.json",
+      "responses/JRN-001_create_res.json"
+    ],
+    "error": "Creation failed with status 502"
+  },
+  {
+    "id": "JRN-002",
+    "name": "Max steps termination test",
+    "category": "journey",
+    "status": "pass",
+    "duration_ms": 16824,
+    "evidence": [
+      "requests/JRN-002_create_req.json",
+      "responses/JRN-002_create_res.json",
+      "journeys/JRN-002_4c45b7b8-0a91-4c2c-9196-4a47370b50b0_status.json",
+      "events/JRN-002_4c45b7b8-0a91-4c2c-9196-4a47370b50b0_events.json",
+      "responses/JRN-002_4c45b7b8-0a91-4c2c-9196-4a47370b50b0_result.json"
+    ]
+  },
+  {
+    "id": "JRN-003",
+    "name": "Timeout termination test",
+    "category": "journey",
+    "status": "pass",
+    "duration_ms": 12849,
+    "evidence": [
+      "requests/JRN-003_create_req.json",
+      "responses/JRN-003_create_res.json",
+      "journeys/JRN-003_707a9688-7122-43bf-9d80-2caf675e17f5_status.json",
+      "events/JRN-003_707a9688-7122-43bf-9d80-2caf675e17f5_events.json",
+      "responses/JRN-003_707a9688-7122-43bf-9d80-2caf675e17f5_result.json"
+    ]
+  },
+  {
+    "id": "JRN-004",
+    "name": "Cancel running journey",
+    "category": "cancellation",
+    "status": "pass",
+    "duration_ms": 1000,
+    "evidence": [
+      "responses/JRN-004_cancel_res.json"
+    ]
+  },
+  {
+    "id": "JRN-005",
+    "name": "Cancel unknown journey",
+    "category": "cancellation",
+    "status": "pass",
+    "duration_ms": 500,
+    "evidence": [
+      "responses/JRN-005_cancel_unknown.json"
+    ]
+  },
+  {
+    "id": "SEC-001",
+    "name": "Path traversal artifact access",
+    "category": "security",
+    "status": "fail",
+    "duration_ms": 200,
+    "evidence": [
+      "responses/SEC-001_path_traversal.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-001",
+    "name": "SSRF Rejection for file:///etc/passwd",
+    "category": "security",
+    "status": "fail",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-001.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-002",
+    "name": "SSRF Rejection for http://127.0.0.1:80",
+    "category": "security",
+    "status": "pass",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-002.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-003",
+    "name": "SSRF Rejection for http://169.254.169.254/latest/meta-data/",
+    "category": "security",
+    "status": "pass",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-003.json"
+    ]
+  },
+  {
+    "id": "REP-001",
+    "name": "Repeatability Run 1",
+    "category": "journey",
+    "status": "pass",
+    "duration_ms": 19048,
+    "evidence": [
+      "requests/REP-001_create_req.json",
+      "responses/REP-001_create_res.json",
+      "journeys/REP-001_aa6db514-06e2-45f3-89a5-5148604d7fcf_status.json",
+      "events/REP-001_aa6db514-06e2-45f3-89a5-5148604d7fcf_events.json",
+      "responses/REP-001_aa6db514-06e2-45f3-89a5-5148604d7fcf_result.json"
+    ]
+  },
+  {
+    "id": "REP-002",
+    "name": "Repeatability Run 2",
+    "category": "journey",
+    "status": "pass",
+    "duration_ms": 18930,
+    "evidence": [
+      "requests/REP-002_create_req.json",
+      "responses/REP-002_create_res.json",
+      "journeys/REP-002_5e8d2b73-45de-4a62-bad4-e6c9e97f7e7c_status.json",
+      "events/REP-002_5e8d2b73-45de-4a62-bad4-e6c9e97f7e7c_events.json",
+      "responses/REP-002_5e8d2b73-45de-4a62-bad4-e6c9e97f7e7c_result.json"
+    ]
+  },
+  {
+    "id": "REP-003",
+    "name": "Repeatability Run 3",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 90,
+    "evidence": [
+      "requests/REP-003_create_req.json",
+      "responses/REP-003_create_res.json"
+    ],
+    "error": "Creation failed with status 502"
+  },
+  {
+    "id": "REP-004",
+    "name": "Repeatability Run 4",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 92,
+    "evidence": [
+      "requests/REP-004_create_req.json",
+      "responses/REP-004_create_res.json"
+    ],
+    "error": "Creation failed with status 502"
+  },
+  {
+    "id": "REP-005",
+    "name": "Repeatability Run 5",
+    "category": "journey",
+    "status": "pass",
+    "duration_ms": 25108,
+    "evidence": [
+      "requests/REP-005_create_req.json",
+      "responses/REP-005_create_res.json",
+      "journeys/REP-005_f5c586c0-d39a-4033-816f-16573742e972_status.json",
+      "events/REP-005_f5c586c0-d39a-4033-816f-16573742e972_events.json",
+      "responses/REP-005_f5c586c0-d39a-4033-816f-16573742e972_result.json"
+    ]
+  },
+  {
+    "id": "REP-006",
+    "name": "Repeatability Run 6",
+    "category": "journey",
+    "status": "pass",
+    "duration_ms": 6491,
+    "evidence": [
+      "requests/REP-006_create_req.json",
+      "responses/REP-006_create_res.json",
+      "journeys/REP-006_7e766e09-4c8f-41bb-9189-5e3105a27700_status.json",
+      "events/REP-006_7e766e09-4c8f-41bb-9189-5e3105a27700_events.json",
+      "responses/REP-006_7e766e09-4c8f-41bb-9189-5e3105a27700_result.json"
+    ]
+  },
+  {
+    "id": "REP-007",
+    "name": "Repeatability Run 7",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 90,
+    "evidence": [
+      "requests/REP-007_create_req.json",
+      "responses/REP-007_create_res.json"
+    ],
+    "error": "Creation failed with status 502"
+  },
+  {
+    "id": "REP-008",
+    "name": "Repeatability Run 8",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 87,
+    "evidence": [
+      "requests/REP-008_create_req.json",
+      "responses/REP-008_create_res.json"
+    ],
+    "error": "Creation failed with status 502"
+  },
+  {
+    "id": "REP-009",
+    "name": "Repeatability Run 9",
+    "category": "journey",
+    "status": "pass",
+    "duration_ms": 37654,
+    "evidence": [
+      "requests/REP-009_create_req.json",
+      "responses/REP-009_create_res.json",
+      "journeys/REP-009_be2a833e-59b1-4378-a6dc-715305cb78d1_status.json",
+      "events/REP-009_be2a833e-59b1-4378-a6dc-715305cb78d1_events.json",
+      "responses/REP-009_be2a833e-59b1-4378-a6dc-715305cb78d1_result.json"
+    ]
+  },
+  {
+    "id": "REP-0010",
+    "name": "Repeatability Run 10",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 90,
+    "evidence": [
+      "requests/REP-0010_create_req.json",
+      "responses/REP-0010_create_res.json"
+    ],
+    "error": "Creation failed with status 502"
+  },
+  {
+    "id": "CONC-1-1",
+    "name": "Concurrency 1 Worker 1",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 86,
+    "evidence": [
+      "requests/CONC-1-1_create_req.json",
+      "responses/CONC-1-1_create_res.json"
+    ],
+    "error": "Creation failed with status 502"
+  },
+  {
+    "id": "CONC-2-2",
+    "name": "Concurrency 2 Worker 2",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 85,
+    "evidence": [
+      "requests/CONC-2-2_create_req.json",
+      "responses/CONC-2-2_create_res.json"
+    ],
+    "error": "Creation failed with status 502"
+  },
+  {
+    "id": "CONC-2-1",
+    "name": "Concurrency 2 Worker 1",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 88,
+    "evidence": [
+      "requests/CONC-2-1_create_req.json",
+      "responses/CONC-2-1_create_res.json"
+    ],
+    "error": "Creation failed with status 502"
+  },
+  {
+    "id": "CONC-4-2",
+    "name": "Concurrency 4 Worker 2",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 109,
+    "evidence": [
+      "requests/CONC-4-2_create_req.json",
+      "responses/CONC-4-2_create_res.json"
+    ],
+    "error": "Creation failed with status 502"
+  },
+  {
+    "id": "CONC-4-1",
+    "name": "Concurrency 4 Worker 1",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 45046,
+    "evidence": [
+      "requests/CONC-4-1_create_req.json",
+      "responses/CONC-4-1_create_res.json"
+    ],
+    "error": "Creation failed with status 500"
+  },
+  {
+    "id": "CONC-4-4",
+    "name": "Concurrency 4 Worker 4",
+    "category": "journey",
+    "status": "fail",
+    "duration_ms": 45043,
+    "evidence": [
+      "requests/CONC-4-4_create_req.json",
+      "responses/CONC-4-4_create_res.json"
+    ],
+    "error": "Creation failed with status 500"
+  },
+  {
+    "id": "CONC-4-3",
+    "name": "Concurrency 4 Worker 3",
+    "category": "journey",
+    "status": "pass",
+    "duration_ms": 63316,
+    "evidence": [
+      "requests/CONC-4-3_create_req.json",
+      "responses/CONC-4-3_create_res.json",
+      "journeys/CONC-4-3_71c4f2a3-6176-4b4f-bbad-12f60dd68130_status.json",
+      "events/CONC-4-3_71c4f2a3-6176-4b4f-bbad-12f60dd68130_events.json",
+      "responses/CONC-4-3_71c4f2a3-6176-4b4f-bbad-12f60dd68130_result.json"
+    ]
+  }
+]
