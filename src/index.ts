@@ -27,3 +27,5 @@ export * from "./lifecycle/index.js";
 export * from "./reporters/index.js";
 export * from "./runner/index.js";
 export * from "./video/index.js";
+export * from "./journey/index.js";
+export * from "./app/index.js";

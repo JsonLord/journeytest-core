@@ -1,0 +1,8 @@
+node_modules
+dist
+runs
+coverage
+.git
+.env
+docs/.vitepress/cache
+docs/.vitepress/dist

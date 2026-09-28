@@ -1,0 +1,34 @@
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createApiServer } from "../src/app/server.js";
+import { isHuggingFaceSpace, resolveLayaMode } from "../src/app/config.js";
+import { assertSafeJourneyNetwork, assertSafeJourneyUrl, assertSafeRedirectChain } from "../src/app/security.js";
+import { ManagedLayaService } from "../src/app/managedLaya.js";
+import { JourneyRunner, JourneyService, ScriptedAgent, type LayaBackend } from "../src/journey/index.js";
+import type { BrowserDriver } from "../src/drivers/types.js";
+
+function driver(): BrowserDriver { let url = "https://example.com"; return { start: async()=>{}, close:async()=>{}, startTrace:async()=>({summary:"trace"}), stopTrace:async path=>{await writeFile(path,'{"traceEvents":[]}');return{summary:"traced",details:{path}}}, open:async value=>{url=value;return{summary:"open"}}, snapshot:async()=>({summary:"snap",stdout:'link "Pricing" [ref=e1]'}), click:async()=>({summary:"click"}), fill:async()=>({summary:"fill"}), type:async()=>({summary:"type"}), press:async()=>({summary:"press"}), scroll:async()=>({summary:"scroll"}), wait:async()=>({summary:"wait"}), screenshot:async o=>({summary:"shot",details:{path:o.path}}), startRecording:async()=>({summary:"start"}), stopRecording:async()=>({summary:"stop"}), scrollIntoView:async()=>({summary:"view"}), hover:async()=>({summary:"hover"}), dragAndDrop:async()=>({summary:"drag"}), upload:async()=>({summary:"upload"}), download:async o=>({summary:"download",details:{path:o.path}}), getElementBox:async()=>({summary:"box",details:{x:0,y:0,width:1,height:1}}), getViewport:async()=>({summary:"viewport",details:{width:800,height:600}}), getUrl:async()=>url, getTitle:async()=>"Fixture" }; }
+const backend: LayaBackend = { start:async()=>{},close:async()=>{},health:async()=>({ok:true,backend:"test"}),infer:async()=>({answers:{},backend:"test",latencyMs:0}) };
+
+describe("service interfaces", () => {
+  afterEach(() => vi.unstubAllEnvs());
+  it("exposes asynchronous create, status, result, events and safe artifacts", async () => {
+    const outputDir=await mkdtemp(join(tmpdir(),"jt-api-")); const service=new JourneyService(()=>new JourneyRunner({outputDir,driver:driver(),agent:new ScriptedAgent([{operation:"DONE",confidence:1}])})); const server=createApiServer({service,backend}); await new Promise<void>(r=>server.listen(0,"127.0.0.1",r)); const address=server.address(); if(!address||typeof address==="string") throw new Error("listen failed"); const base=`http://127.0.0.1:${address.port}`;
+    vi.stubEnv("JOURNEYTEST_ALLOW_PRIVATE_NETWORKS","1");
+    const created=await fetch(`${base}/api/v1/journeys`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({url:"https://example.com",goal:"Done",trace:true})}); expect(created.status).toBe(202); const {journey_id:id}=await created.json() as {journey_id:string};
+    let resultResponse:Response; do { resultResponse=await fetch(`${base}/api/v1/journeys/${id}/result`); if(resultResponse.status===202) await new Promise(r=>setTimeout(r,10)); } while(resultResponse.status===202);
+    expect((await resultResponse.json() as {status:string}).status).toBe("completed"); expect((await fetch(`${base}/api/v1/journeys/${id}`)).status).toBe(200); expect((await fetch(`${base}/api/v1/journeys/${id}/events`)).status).toBe(200); expect((await fetch(`${base}/api/v1/journeys/${id}/artifacts/result`)).status).toBe(200); expect((await fetch(`${base}/api/v1/journeys/${id}/artifacts/trace`)).status).toBe(200); expect((await fetch(`${base}/api/v1/journeys/${id}/artifacts/../../etc/passwd`)).status).toBe(404);
+    const schema=await fetch(`${base}/api/v1/openapi.json`).then(response=>response.json()) as {paths:Record<string,any>;components:{schemas:Record<string,unknown>}}; expect(Object.keys(schema.paths)).toEqual(expect.arrayContaining(["/api/v1/health","/api/v1/ready","/api/v1/info","/api/v1/journeys","/api/v1/journeys/{id}/artifacts/{artifact_id}"])); expect(schema.paths["/api/v1/journeys"].post.requestBody.content["application/json"].schema.properties.trace).toEqual({type:"boolean",default:false}); expect(schema.paths["/api/v1/journeys/{id}/result"].get.responses["200"].content["application/json"].schema.$ref).toBe("#/components/schemas/JourneyResult"); expect(schema.components.schemas).toHaveProperty("JourneyResult");
+    await new Promise<void>(r=>server.close(()=>r()));
+  });
+  it("resolves Space auto mode and rejects unsafe URLs", () => { expect(isHuggingFaceSpace({SPACE_ID:"owner/demo"})).toBe(true); expect(resolveLayaMode("auto",{SPACE_ID:"owner/demo"})).toBe("embedded"); expect(resolveLayaMode("auto",{LAYA_REMOTE_URL:"https://laya.example/v1/systemone"})).toBe("remote"); expect(()=>assertSafeJourneyUrl("file:///tmp/a")).toThrow(); expect(()=>assertSafeJourneyUrl("http://127.0.0.1")).toThrow(); expect(()=>assertSafeJourneyUrl("http://169.254.169.254/latest/meta-data")).toThrow(); });
+  it.each(["http://localhost", "http://127.0.0.1", "http://10.1.2.3", "http://172.16.1.1", "http://172.31.255.255", "http://192.168.1.1", "http://169.254.169.254", "http://[::1]", "http://[fc00::1]", "http://[fd12::1]", "file:///tmp/a", "javascript:alert(1)", "data:text/plain,hi"])("rejects unsafe URL %s", value => expect(() => assertSafeJourneyUrl(value)).toThrow());
+  it("rejects DNS answers and redirects to private networks", async () => { const resolver = vi.fn(async () => [{ address: "10.0.0.2", family: 4 }] as never); await expect(assertSafeJourneyNetwork("https://public.example", [], resolver)).rejects.toThrow("blocked network"); const fetcher = vi.fn(async () => new Response(null, { status: 302, headers: { location: "http://127.0.0.1/private" } })); await expect(assertSafeRedirectChain("https://example.com", [], fetcher)).rejects.toThrow(); });
+  it("starts, health-checks, and terminates a managed localdecide process", async () => {
+    const dir=await mkdtemp(join(tmpdir(),"jt-managed-")); const marker=join(dir,"stopped"); const script=join(dir,"server.cjs"); const port=19000+Math.floor(Math.random()*1000);
+    await writeFile(script,`const http=require('http');const s=http.createServer((q,r)=>{r.writeHead(200,{'content-type':'application/json'});r.end(JSON.stringify({ok:true,answers:{operation:{choice:'DONE',probabilities:{DONE:1}}}}))}).listen(${port},'127.0.0.1');process.on('SIGTERM',()=>require('fs').writeFileSync(${JSON.stringify(marker)},'yes')||s.close(()=>process.exit(0)));`);
+    vi.stubEnv("LAYA_PREWARM","0"); const managed=new ManagedLayaService({command:process.execPath,args:[script],endpoint:`http://127.0.0.1:${port}/v1/systemone`,startupTimeoutMs:5000}); await managed.start(); await managed.stop(); expect(await readFile(marker,"utf8")).toBe("yes");
+  });
+});

@@ -10,6 +10,14 @@ boundaries that should stay current as the package evolves.
 
 ## Map
 
+- [Laya service architecture](architecture.md): The shared service,
+  runner, and agent ownership boundaries.
+- [Laya integration](laya-integration.md): Decision safety and integration
+  status.
+- [Upstream sources](upstream-sources.md): Audited provenance and selective
+  reuse decisions.
+- [Implementation gates](implementation-notes.md): Gates A through F.
+
 - [Product](product/index.md): What JourneyTest is and which features it
   exposes.
 - [Architecture](architecture/index.md): How journeys move through schemas,

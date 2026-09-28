@@ -1,3 +1,13 @@
+---
+title: JourneyTest Laya
+emoji: 🧭
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # @baguette-studios/journeytest-core
 
 AI-agent-directed user journey testing for web apps.
@@ -11,6 +21,35 @@ AI-agent-directed user journey testing for web apps.
 - video, timeline, JSON, screenshot, dashboard, and Markdown report artifacts
 
 The first director implementation uses Pi Agent SDK. The first browser implementation uses the `agent-browser` CLI.
+
+## Service journeys with Laya
+
+Run a URL-and-goal journey through the shared JourneyService and a SystemOne
+server:
+
+```bash
+journeytest run --url https://example.com --goal "Open pricing" --laya-mode remote
+journeytest serve                 # API and lightweight developer page
+journeytest ui                    # Gradio plus /api/v1 on port 7860
+journeytest doctor
+```
+
+Add `--trace` to capture an agent-browser Chrome DevTools trace. The resulting
+`JourneyResult.artifacts.trace` is downloadable from the journey artifact API
+with artifact ID `trace`. Minimal API clients live in
+[`examples/python_client.py`](examples/python_client.py),
+[`examples/typescript_client.ts`](examples/typescript_client.ts), and
+[`examples/curl.md`](examples/curl.md).
+
+For a Hugging Face Docker Space, use the included `Dockerfile` and the startup
+command `journeytest space`. With `LAYA_MODE=auto`, Space detection starts one
+managed localdecide process, prewarms the configured Laya checkpoint, checks
+readiness, and serves the Gradio UI and `/api/v1` together on port 7860. Set
+`LAYA_MODE=remote` and `LAYA_REMOTE_URL` to use an external SystemOne endpoint.
+
+Public submissions reject local, loopback, private, link-local, metadata, and
+non-HTTP URLs. Set `JOURNEYTEST_ALLOW_PRIVATE_NETWORKS=1` only for controlled
+local fixture testing.
 
 ## Documentation
 
