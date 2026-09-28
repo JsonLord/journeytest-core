@@ -1,8 +1,10 @@
 """Thin Gradio surface over the authoritative JourneyTest HTTP/service runtime."""
+from contextlib import asynccontextmanager
 import json, os, time, urllib.error, urllib.request
+from typing import Optional
 import gradio as gr
 from fastapi import FastAPI, Request
-from fastapi.responses import Response
+from fastapi.responses import HTMLResponse, Response
 import httpx, uvicorn
 
 API = os.environ.get("JOURNEYTEST_API_BASE", "http://127.0.0.1:7861")
@@ -156,32 +158,44 @@ def credential_status(name):
     return "configured ✓" if value is True or value == "configured" else "not configured"
 
 
+http_client: Optional[httpx.AsyncClient] = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global http_client
+    http_client = httpx.AsyncClient(timeout=30.0)
+    try:
+        yield
+    finally:
+        await http_client.aclose()
+        http_client = None
+
 def build_app():
     demo = build_ui()
-    app = FastAPI(title="JourneyTest API Proxy", docs_url="/docs")
-    try:
-        _, public_openapi = request("/api/v1/openapi.json")
-        app.openapi = lambda: public_openapi
-    except Exception:
-        pass
+    app = FastAPI(title="JourneyTest API Proxy", docs_url=None, redoc_url=None, lifespan=lifespan)
 
     @app.get("/health")
     async def health_endpoint():
-        async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            client = http_client or httpx.AsyncClient(timeout=10.0)
             upstream = await client.get(f"{API}/health")
-            return Response(upstream.content, status_code=upstream.status_code, media_type=upstream.headers.get("content-type"))
+            return Response(upstream.content, status_code=upstream.status_code, media_type=upstream.headers.get("content-type", "application/json"))
+        except Exception as error:
+            return Response(json.dumps({"ok": False, "error": str(error)}), status_code=503, media_type="application/json")
 
-    @app.get("/api-docs")
+    @app.get("/api-docs", response_class=HTMLResponse)
+    @app.get("/docs", response_class=HTMLResponse)
     async def api_docs_endpoint():
-        async with httpx.AsyncClient(timeout=10) as client:
-            upstream = await client.get(f"{API}/api-docs")
-            return Response(upstream.content, status_code=upstream.status_code, media_type=upstream.headers.get("content-type"))
+        return HTMLResponse("<!doctype html><title>JourneyTest API</title><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css><div id=swagger-ui></div><script src=https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js></script><script>SwaggerUIBundle({url:'/api/v1/openapi.json',dom_id:'#swagger-ui'})</script>")
 
-    @app.api_route("/api/{path:path}", methods=["GET", "POST"])
+    @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
     async def api_proxy(path: str, incoming: Request):
-        async with httpx.AsyncClient(timeout=30) as client:
+        try:
+            client = http_client or httpx.AsyncClient(timeout=30.0)
             upstream = await client.request(incoming.method, f"{API}/api/{path}", content=await incoming.body(), headers={"content-type": incoming.headers.get("content-type", "application/json")})
-        return Response(upstream.content, status_code=upstream.status_code, media_type=upstream.headers.get("content-type"))
+            return Response(upstream.content, status_code=upstream.status_code, media_type=upstream.headers.get("content-type", "application/json"))
+        except Exception as error:
+            return Response(json.dumps({"error": str(error)}), status_code=502, media_type="application/json")
 
     return gr.mount_gradio_app(app, demo, path="/"), demo
 
