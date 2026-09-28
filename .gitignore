@@ -17,3 +17,4 @@ storage-state*.json
 *.storage-state.json
 *.har
 *.webm
+!.env.example

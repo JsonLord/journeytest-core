@@ -1,10 +1,8 @@
 import { join } from "node:path";
 import { Agent, type AgentEvent } from "@earendil-works/pi-agent-core";
 import {
-  getModel,
   type Model,
   type Provider,
-  type KnownProvider,
 } from "@earendil-works/pi-ai";
 import {
   AgentVerdictSchema,
@@ -16,6 +14,7 @@ import {
   getJourneyCriteria,
   validateAgentVerdictForJourney,
 } from "../../core/validation.js";
+import { resolveReasoningModel } from "./modelResolution.js";
 import { buildDirectorPrompt, DEFAULT_DIRECTOR_SYSTEM_PROMPT } from "../prompt.js";
 import type { AgentDirector, DirectorModelInfo, DirectorRunContext } from "../types.js";
 import { createPiBrowserTools, type JourneyFinishState } from "./tools.js";
@@ -42,7 +41,7 @@ export class PiSdkDirector implements AgentDirector {
   constructor(options: PiSdkDirectorOptions) {
     this.piModel =
       options.model ??
-      getModel(options.provider as KnownProvider, options.modelId as never);
+      resolveReasoningModel(String(options.provider ?? ""), options.modelId);
     this.thinkingLevel = options.thinkingLevel ?? "medium";
     this.systemPrompt = options.systemPrompt ?? DEFAULT_DIRECTOR_SYSTEM_PROMPT;
     this.getApiKey = options.getApiKey;

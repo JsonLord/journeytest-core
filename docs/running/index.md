@@ -4,3 +4,4 @@
   parallelism, retries, and suite behavior.
 - [Service interfaces and Space deployment](service-interfaces.md): Shared CLI,
   API, Gradio, managed Laya, security, and Docker Space operation.
+- [Cognition runtime configuration](cognition-configuration.md): Profiles, dotenv precedence, routing, retries, credentials, and deployment behavior.

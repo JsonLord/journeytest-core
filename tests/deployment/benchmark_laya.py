@@ -115,6 +115,14 @@ def percentile(data: List[float], pct: float) -> float:
     d = k - f
     return sorted_data[f] + (sorted_data[c] - sorted_data[f]) * d
 
+def normalize_response(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Unwrap common inference envelopes without manufacturing successful fields."""
+    current = body
+    for key in ("output", "result", "data"):
+        if isinstance(current, dict) and isinstance(current.get(key), dict) and "answers" not in current:
+            current = current[key]
+    return current
+
 def run_suite(client: LocalLayaClient, out_dir: str):
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     raw_logs = []
@@ -127,22 +135,24 @@ def run_suite(client: LocalLayaClient, out_dir: str):
             "timestamp": time.time(),
             "candidate_count": len(questions.get(ans_key, {}).get("criteria", {})),
             "expected": expected_choice,
+            "status": res["status"],
             "actual": None,
             "correct": False,
             "confidence": 0.0,
-            "model_latency_ms": 0,
+            "model_latency_ms": None,
             "round_trip_ms": res["rtt_ms"],
-            "overhead_ms": 0,
+            "overhead_ms": None,
             "backend": None,
             "model": None,
             "error": res["error"]
         }
         if res["status"] == "success" and res["response"]:
-            resp = res["response"]
+            resp = normalize_response(res["response"])
             item["backend"] = resp.get("backend")
             item["model"] = resp.get("model")
-            item["model_latency_ms"] = resp.get("latency_ms", 0)
-            item["overhead_ms"] = max(0.0, item["round_trip_ms"] - item["model_latency_ms"])
+            latency = resp.get("latency_ms")
+            item["model_latency_ms"] = latency if isinstance(latency, (int, float)) else None
+            item["overhead_ms"] = max(0.0, item["round_trip_ms"] - latency) if isinstance(latency, (int, float)) else None
 
             # contract check
             vols = validate_response_contract(questions, resp)
@@ -245,14 +255,16 @@ def run_suite(client: LocalLayaClient, out_dir: str):
 
     # Generate summary JSON
     def calc_stats(runs):
-        corrects = [r["correct"] for r in runs if r["status"] == "success"]
+        valid = [r for r in runs if r["status"] == "success" and r["actual"] is not None]
+        corrects = [r["correct"] for r in valid]
         acc = sum(corrects) / len(corrects) if corrects else 0.0
-        m_lats = [r["model_latency_ms"] for r in runs if r["status"] == "success"]
-        rtts = [r["round_trip_ms"] for r in runs if r["status"] == "success"]
-        confs = [r["confidence"] for r in runs if r["status"] == "success"]
-        overheads = [r["overhead_ms"] for r in runs if r["status"] == "success"]
+        m_lats = [r["model_latency_ms"] for r in valid if r["model_latency_ms"] is not None]
+        rtts = [r["round_trip_ms"] for r in valid]
+        confs = [r["confidence"] for r in valid]
+        overheads = [r["overhead_ms"] for r in valid if r["overhead_ms"] is not None]
         return {
             "runs": len(runs),
+            "valid_runs": len(valid),
             "accuracy": acc,
             "p50_model_ms": percentile(m_lats, 50),
             "p95_model_ms": percentile(m_lats, 95),

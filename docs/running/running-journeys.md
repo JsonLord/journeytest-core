@@ -6,7 +6,7 @@ tags:
   - journeytest
   - cli
   - execution
-timestamp: 2026-06-29T10:33:26Z
+timestamp: 2026-09-28T00:00:00Z
 source_files:
   - README.md
   - src/cli.ts
@@ -71,3 +71,7 @@ also write a suite dashboard and `history.json`. `--compare-to` compares a suite
 against a previous suite directory or single `run.json`.
 
 For CI, use `--junit`, `--github-annotations`, and `--summary-json`.
+
+## Service cognition profile
+
+URL-and-goal runs accept `--cognition-profile`. JourneyTest automatically reads `.env` and `.env.local` through the canonical configuration loader; shell environment values take precedence, and the CLI override applies only to that run. `journeytest info --json` prints the active profile, loaded file paths, backend enablement, endpoint hosts, and credential presence without secret values.

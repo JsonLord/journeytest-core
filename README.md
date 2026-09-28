@@ -47,9 +47,53 @@ managed localdecide process, prewarms the configured Laya checkpoint, checks
 readiness, and serves the Gradio UI and `/api/v1` together on port 7860. Set
 `LAYA_MODE=remote` and `LAYA_REMOTE_URL` to use an external SystemOne endpoint.
 
+Optionally supervise Laya with Pi-based System-2 reasoning. This keeps Laya on
+the fast action-selection path while Pi interprets goals, confirms ambiguous
+`DONE`/`BLOCKED` candidates, and replans only at strategic checkpoints:
+
+```bash
+REASONING_MODE=pi \
+REASONING_PROVIDER=anthropic \
+REASONING_MODEL=claude-sonnet-4-5 \
+ANTHROPIC_API_KEY=... \
+journeytest serve
+```
+
+`REASONING_MODE=off` is the default for offline compatibility. Optional tuning
+uses `REASONING_THINKING_LEVEL=low|medium|high`,
+`REASONING_NO_PROGRESS_STEPS` (default 3), and
+`REASONING_CHECKPOINT_EVERY_N_STEPS` (default 0/disabled). Explicit success
+criteria in service requests are checked locally before any reasoning call.
+
 Public submissions reject local, loopback, private, link-local, metadata, and
 non-HTTP URLs. Set `JOURNEYTEST_ALLOW_PRIVATE_NETWORKS=1` only for controlled
 local fixture testing.
+
+## Cognition profiles and settings
+
+JourneyTest routes cognition through four profiles: `local-cloud`, `local-spark-cloud`, `dual-laya-cloud`, and `dual-laya-spark-cloud`. Local Laya is always the normal System-1 path; hosted Laya and Vision are conditional, Spark is optional local System 2, and Pi cloud reasoning is the validated escalation authority.
+
+For localhost:
+
+```bash
+cp .env.example .env.local
+# edit endpoints and keys
+journeytest ui
+```
+
+For Hugging Face, configure non-secret flags/endpoints/models as Space Variables and `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `LAYA_HOSTED_API_KEY`, `LAYA_VISION_API_KEY`, and `SPARK_OPENAI_API_KEY` as Space Secrets. The Settings panel is session-scoped on Space and never writes `.env.local`. Use `journeytest info --json` for a secret-free configuration summary, or override one run with `--cognition-profile local-cloud`.
+
+Set `OPENAI_BASE_URL` to select Pi’s OpenAI-compatible Chat Completions transport. In this mode `OPENAI_MODEL` is the endpoint model ID and `OPENAI_API_KEY` comes from the local environment or Hugging Face Space Secrets. Configure only the cloud key selected by `REASONING_PROVIDER`. Hosted Laya,
+Vision, and Spark keys are optional unless their matching `*_AUTH_REQUIRED`
+flag is enabled. `HF_TOKEN` is recommended for authenticated Hugging Face model
+downloads but is only required for private or gated resources; public models
+continue without it.
+
+Pi-backed cloud reasoning validates `REASONING_PROVIDER` and
+`REASONING_MODEL` against the model registry in the installed `pi-ai` package
+when `OPENAI_BASE_URL` is absent. With `OPENAI_BASE_URL`, JourneyTest instead
+constructs an internal `journeytest-openai-compatible` Pi model using
+`OPENAI_MODEL`; arbitrary endpoint model IDs do not require registry entries.
 
 ## Documentation
 

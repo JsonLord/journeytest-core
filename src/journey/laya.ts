@@ -47,8 +47,9 @@ export class LayaAgent implements JourneyAgent {
   private readonly maxElements: number; private readonly maxOptions: number;
   constructor(private readonly options: LayaAgentOptions) { this.model = options.model; this.revision = options.revision; this.maxElements = Math.max(1, options.maxElements ?? 20); this.maxOptions = Math.max(2, options.maxOptionsPerQuestion ?? 20); }
   async decide(observation: Observation, state: JourneyState, context: JourneyContext): Promise<AgentDecision> {
-    const scoped = scopeElements(observation, context.goal, this.maxElements);
-    const questions = buildQuestions(scoped, context.goal);
+    const effectiveGoal = context.subgoal ? `Goal: ${context.goal}\n\nCurrent subgoal: ${context.subgoal}` : context.goal;
+    const scoped = scopeElements(observation, effectiveGoal, this.maxElements);
+    const questions = buildQuestions(scoped, effectiveGoal);
     const modelState = { page: { url: observation.url, title: observation.title, text: (observation.visibleText ?? "").slice(0, 1200) }, recent_actions: state.previousDecision ? [{ action: state.previousDecision.operation, text: state.previousResult }] : [] };
     const response = await inferWithChunks(this.options.backend, { model: this.model, state: modelState, questions }, this.maxOptions, context.signal);
     const operationAnswer = validateChoice("operation", questions.operation, response.answers.operation);

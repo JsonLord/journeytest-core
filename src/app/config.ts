@@ -8,3 +8,5 @@ export function resolveLayaMode(value = process.env.LAYA_MODE ?? "auto", env: No
 }
 export function positiveEnv(name: string, fallback: number) { const value = Number(process.env[name] ?? fallback); if (!Number.isInteger(value) || value <= 0) throw new Error(`${name} must be a positive integer`); return value; }
 export function nonnegativeEnv(name: string, fallback: number) { const value = Number(process.env[name] ?? fallback); if (!Number.isInteger(value) || value < 0) throw new Error(`${name} must be a non-negative integer`); return value; }
+export type ReasoningMode = "off" | "pi";
+export function resolveReasoningMode(value = process.env.REASONING_MODE ?? "off"): ReasoningMode { if (value !== "off" && value !== "pi") throw new Error(`Invalid REASONING_MODE: ${value}`); return value; }
