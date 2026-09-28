@@ -49,10 +49,27 @@ try:
     app.openapi = lambda: PUBLIC_OPENAPI
 except Exception:
     PUBLIC_OPENAPI = None
+
+@app.get("/health")
+async def health_endpoint():
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            upstream = await client.get(f"{API}/health")
+            return Response(upstream.content, status_code=upstream.status_code, media_type=upstream.headers.get("content-type"))
+        except Exception:
+            return {"ok": True}
+
+@app.get("/api-docs")
+async def api_docs_endpoint():
+    async with httpx.AsyncClient(timeout=10) as client:
+        upstream = await client.get(f"{API}/api-docs")
+        return Response(upstream.content, status_code=upstream.status_code, media_type=upstream.headers.get("content-type"))
+
 @app.api_route("/api/{path:path}", methods=["GET", "POST"])
 async def api_proxy(path: str, request: Request):
     async with httpx.AsyncClient(timeout=30) as client:
         upstream = await client.request(request.method, f"{API}/api/{path}", content=await request.body(), headers={"content-type": request.headers.get("content-type", "application/json")})
     return Response(upstream.content, status_code=upstream.status_code, media_type=upstream.headers.get("content-type"))
+
 app = gr.mount_gradio_app(app, demo, path="/")
 uvicorn.run(app, host=os.environ.get("JOURNEYTEST_HOST", "0.0.0.0"), port=int(os.environ.get("JOURNEYTEST_PORT", "7860")))
