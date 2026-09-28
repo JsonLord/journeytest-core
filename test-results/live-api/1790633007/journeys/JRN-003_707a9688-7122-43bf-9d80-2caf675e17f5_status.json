@@ -1,0 +1,15 @@
+{
+  "id": "707a9688-7122-43bf-9d80-2caf675e17f5",
+  "request": {
+    "url": "https://example.com",
+    "goal": "Navigate endlessly",
+    "context": {},
+    "maxSteps": 10,
+    "timeoutMs": 2000,
+    "screenshots": true,
+    "trace": false,
+    "confidenceThreshold": 0.15,
+    "successCriteria": []
+  },
+  "status": "completed"
+}

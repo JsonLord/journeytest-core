@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": {
+    "ready": true,
+    "laya": {
+      "ok": true,
+      "backend": "laya-torch"
+    }
+  }
+}

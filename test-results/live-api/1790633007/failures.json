@@ -1,0 +1,239 @@
+[
+  {
+    "id": "BUG-API-004",
+    "severity": "P1",
+    "test_id": "API-004",
+    "title": "Simple health endpoint",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Status fail or HTTP error",
+    "reproduction": [
+      "Execute test API-004"
+    ],
+    "evidence": [
+      "responses/API-004.json"
+    ],
+    "suspected_component": "api_router"
+  },
+  {
+    "id": "BUG-JRN-001",
+    "severity": "P2",
+    "test_id": "JRN-001",
+    "title": "Deterministic Example Domain Journey",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 502",
+    "reproduction": [
+      "Execute test JRN-001"
+    ],
+    "evidence": [
+      "requests/JRN-001_create_req.json",
+      "responses/JRN-001_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-SEC-001",
+    "severity": "P1",
+    "test_id": "SEC-001",
+    "title": "Path traversal artifact access",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Status fail or HTTP error",
+    "reproduction": [
+      "Execute test SEC-001"
+    ],
+    "evidence": [
+      "responses/SEC-001_path_traversal.json"
+    ],
+    "suspected_component": "api_router"
+  },
+  {
+    "id": "BUG-SEC-SSRF-001",
+    "severity": "P1",
+    "test_id": "SEC-SSRF-001",
+    "title": "SSRF Rejection for file:///etc/passwd",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Status fail or HTTP error",
+    "reproduction": [
+      "Execute test SEC-SSRF-001"
+    ],
+    "evidence": [
+      "security/SEC-SSRF-001.json"
+    ],
+    "suspected_component": "api_router"
+  },
+  {
+    "id": "BUG-REP-003",
+    "severity": "P2",
+    "test_id": "REP-003",
+    "title": "Repeatability Run 3",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 502",
+    "reproduction": [
+      "Execute test REP-003"
+    ],
+    "evidence": [
+      "requests/REP-003_create_req.json",
+      "responses/REP-003_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-004",
+    "severity": "P2",
+    "test_id": "REP-004",
+    "title": "Repeatability Run 4",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 502",
+    "reproduction": [
+      "Execute test REP-004"
+    ],
+    "evidence": [
+      "requests/REP-004_create_req.json",
+      "responses/REP-004_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-007",
+    "severity": "P2",
+    "test_id": "REP-007",
+    "title": "Repeatability Run 7",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 502",
+    "reproduction": [
+      "Execute test REP-007"
+    ],
+    "evidence": [
+      "requests/REP-007_create_req.json",
+      "responses/REP-007_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-008",
+    "severity": "P2",
+    "test_id": "REP-008",
+    "title": "Repeatability Run 8",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 502",
+    "reproduction": [
+      "Execute test REP-008"
+    ],
+    "evidence": [
+      "requests/REP-008_create_req.json",
+      "responses/REP-008_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-0010",
+    "severity": "P2",
+    "test_id": "REP-0010",
+    "title": "Repeatability Run 10",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 502",
+    "reproduction": [
+      "Execute test REP-0010"
+    ],
+    "evidence": [
+      "requests/REP-0010_create_req.json",
+      "responses/REP-0010_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-1-1",
+    "severity": "P2",
+    "test_id": "CONC-1-1",
+    "title": "Concurrency 1 Worker 1",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 502",
+    "reproduction": [
+      "Execute test CONC-1-1"
+    ],
+    "evidence": [
+      "requests/CONC-1-1_create_req.json",
+      "responses/CONC-1-1_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-2-2",
+    "severity": "P2",
+    "test_id": "CONC-2-2",
+    "title": "Concurrency 2 Worker 2",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 502",
+    "reproduction": [
+      "Execute test CONC-2-2"
+    ],
+    "evidence": [
+      "requests/CONC-2-2_create_req.json",
+      "responses/CONC-2-2_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-2-1",
+    "severity": "P2",
+    "test_id": "CONC-2-1",
+    "title": "Concurrency 2 Worker 1",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 502",
+    "reproduction": [
+      "Execute test CONC-2-1"
+    ],
+    "evidence": [
+      "requests/CONC-2-1_create_req.json",
+      "responses/CONC-2-1_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-4-2",
+    "severity": "P2",
+    "test_id": "CONC-4-2",
+    "title": "Concurrency 4 Worker 2",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 502",
+    "reproduction": [
+      "Execute test CONC-4-2"
+    ],
+    "evidence": [
+      "requests/CONC-4-2_create_req.json",
+      "responses/CONC-4-2_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-4-1",
+    "severity": "P2",
+    "test_id": "CONC-4-1",
+    "title": "Concurrency 4 Worker 1",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 500",
+    "reproduction": [
+      "Execute test CONC-4-1"
+    ],
+    "evidence": [
+      "requests/CONC-4-1_create_req.json",
+      "responses/CONC-4-1_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-4-4",
+    "severity": "P2",
+    "test_id": "CONC-4-4",
+    "title": "Concurrency 4 Worker 4",
+    "expected": "HTTP 200 or expected journey outcome",
+    "actual": "Creation failed with status 500",
+    "reproduction": [
+      "Execute test CONC-4-4"
+    ],
+    "evidence": [
+      "requests/CONC-4-4_create_req.json",
+      "responses/CONC-4-4_create_res.json"
+    ],
+    "suspected_component": "journey_runner"
+  }
+]
