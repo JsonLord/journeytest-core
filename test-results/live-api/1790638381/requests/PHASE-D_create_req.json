@@ -1,0 +1,8 @@
+{
+  "url": "https://example.com",
+  "goal": "Follow the 'More information...' link to open the IANA page",
+  "maxSteps": 8,
+  "timeoutMs": 60000,
+  "screenshots": true,
+  "trace": true
+}

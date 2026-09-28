@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "JOURNEY_NOT_FOUND",
+    "message": "Unknown journey completed-journey-id",
+    "retryable": false
+  }
+}

@@ -185,6 +185,10 @@ def build_app():
     async def api_docs_endpoint(incoming: Request):
         return await proxy_request(incoming, f"{API}/api-docs", timeout=10)
 
+    @app.get("/docs")
+    async def docs_endpoint(incoming: Request):
+        return await proxy_request(incoming, f"{API}/api-docs", timeout=10)
+
     @app.api_route("/api/{path:path}", methods=["GET", "POST"])
     async def api_proxy(path: str, incoming: Request):
         return await proxy_request(incoming, f"{API}/api/{path}")

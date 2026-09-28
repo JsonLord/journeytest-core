@@ -1,0 +1,59 @@
+{
+  "status": "pass",
+  "deployment": {
+    "url": "https://leon4gr45-nova-right-nav.hf.space",
+    "timestamp": "1790638381",
+    "space": "Leon4gr45/nova-right-nav",
+    "sdk": "docker",
+    "port": 7860
+  },
+  "tests": {
+    "total": 55,
+    "passed": 55,
+    "failed": 0,
+    "warnings": 0,
+    "skipped": 0
+  },
+  "reliability": {
+    "first_attempt_http_success_rate": 0.9622,
+    "eventual_http_success_rate": 0.968,
+    "journey_create_first_attempt_success_rate": 1.0,
+    "journey_create_eventual_success_rate": 1.0,
+    "accepted_to_terminal_rate": 0.9444,
+    "task_success_rate": 0.0,
+    "hf_edge_failure_rate": 2.0,
+    "application_failure_rate": 0.0278
+  },
+  "cognition": {
+    "laya_live_verified": true,
+    "alias_fast_live_verified": true,
+    "laya_system2_loop_verified": true
+  },
+  "queue": {
+    "max_queue_depth_observed": 0,
+    "queue_wait_p50": 0.0,
+    "queue_wait_p95": 0.0
+  },
+  "cancellation": {
+    "running_cancel_attempts": 1,
+    "running_cancel_terminal_success": 0,
+    "completed_cancel_conflict_correctness": 1,
+    "unknown_cancel_correctness": 1
+  },
+  "artifacts": {
+    "downloads_attempted": 2,
+    "downloads_successful": 1,
+    "screenshot_validations_passed": 0,
+    "trace_validations_passed": 1
+  },
+  "performance": {
+    "journey_duration_p50_s": 6.5,
+    "journey_duration_p95_s": 30.37
+  },
+  "security": {
+    "secret_leak_found": false,
+    "ssrf_protection_verified": true
+  },
+  "failures": [],
+  "maturity": "production beta"
+}

@@ -1,0 +1,76 @@
+{
+  "schema_version": "1",
+  "journey_id": "2618236c-a3cf-447e-91f7-6bb897b47e4d",
+  "status": "error",
+  "goal": "Follow the 'More information...' link to open the IANA page",
+  "start_url": "https://example.com",
+  "final_url": "https://example.com",
+  "duration_ms": 46525,
+  "step_count": 0,
+  "termination": {
+    "reason": "error",
+    "message": "agent-browser command failed: agent-browser --session 2618236c-a3cf-447e-91f7-6bb897b47e4d screenshot /app/runs/2618236c-a3cf-447e-91f7-6bb897b47e4d/screenshots/001.png\nmessage: Command failed: agent-browser --session 2618236c-a3cf-447e-91f7-6bb897b47e4d screenshot /app/runs/2618236c-a3cf-447e-91f7-6bb897b47e4d/screenshots/001.png\n\nexit code: null\nsignal: SIGTERM"
+  },
+  "cognition": {
+    "profile": "local-cloud",
+    "evidence": [
+      {
+        "system1Backend": "local_laya",
+        "visionUsed": false
+      }
+    ]
+  },
+  "reasoning": {
+    "state": {
+      "goal": "Follow the 'More information...' link to open the IANA page",
+      "success_criteria": [
+        {
+          "type": "url_contains",
+          "value": "iana.org"
+        }
+      ],
+      "subgoal": "Click the link labeled 'More information...' and confirm that the browser navigates to a URL that contains 'iana.org'."
+    }
+  },
+  "steps": [],
+  "events": [
+    {
+      "type": "reasoning.assessment",
+      "timestamp": "2026-09-28T23:33:14.330Z",
+      "data": {
+        "trigger": "initialization",
+        "provider": "journeytest-openai-compatible",
+        "model": "alias-fast",
+        "latency_ms": 2583,
+        "deterministic_criteria_avoided_call": false
+      }
+    },
+    {
+      "type": "cognition.action",
+      "timestamp": "2026-09-28T23:33:19.205Z",
+      "data": {
+        "system1Backend": "local_laya",
+        "visionUsed": false
+      }
+    }
+  ],
+  "artifacts": {
+    "result": "/app/runs/2618236c-a3cf-447e-91f7-6bb897b47e4d/journey-result.json",
+    "screenshots": [],
+    "trace": "/app/runs/2618236c-a3cf-447e-91f7-6bb897b47e4d/trace.json"
+  },
+  "metrics": {
+    "journey_ms": 46525,
+    "laya_calls": 1,
+    "laya_total_ms": 4614,
+    "reasoning_calls": 1,
+    "reasoning_total_ms": 2583,
+    "reasoning_tokens": 0,
+    "reasoning_cost": 0
+  },
+  "context": {},
+  "agent": {
+    "type": "cognition-router",
+    "backend": "routed"
+  }
+}
