@@ -2660,11 +2660,37 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   });
 }
 
+function checkAndLogEnvKeys() {
+  const keysToCheck = [
+    { key: "HF_TOKEN", required: true },
+    { key: "HF_PROFILE", required: false },
+    { key: "HF_SPACE", required: false },
+    { key: "OPENAI_API_KEY", required: false },
+    { key: "ANTHROPIC_API_KEY", required: false },
+    { key: "GEMINI_API_KEY", required: false },
+    { key: "LAYA_HOSTED_API_KEY", required: false },
+    { key: "LAYA_VISION_API_KEY", required: false },
+    { key: "SPARK_OPENAI_API_KEY", required: false },
+  ];
+
+  console.error("Checking environment key configurations:");
+  for (const { key, required } of keysToCheck) {
+    const isSet = Boolean(process.env[key] && process.env[key]?.trim() !== "");
+    if (isSet) {
+      console.error(`  [SET] ${key}`);
+    } else {
+      const level = required ? "WARNING" : "INFO";
+      console.error(`  [${level}] Unset environment key: ${key}${required ? " (Recommended/Required for Space operations)" : ""}`);
+    }
+  }
+}
+
 async function runServerCommand(name: "serve" | "ui" | "space", options: { host: string; port: string; cognitionProfile?: string }) {
   const port = Number(options.port); if (!Number.isInteger(port) || port <= 0) throw new Error("--port must be a positive integer");
   const loadedConfig = loadRuntimeCognitionConfig({ overrides: options.cognitionProfile ? { COGNITION_PROFILE: options.cognitionProfile } : undefined });
   const mode = resolveLayaMode(loadedConfig.localLaya.mode); let managed: ManagedLayaService | undefined;
   console.error("JourneyTest starting"); console.error(`Environment: ${isHuggingFaceSpace() ? "Hugging Face Space" : "local"}`); console.error(`Laya mode: ${mode}`);
+  checkAndLogEnvKeys();
   if (name === "space" && mode === "embedded") { console.error("Starting localdecide"); managed = new ManagedLayaService(); await managed.start(); console.error("Laya ready"); }
   if (name === "space") { await checkBrowserLaunch(); console.error("Browser ready"); }
   const runtime = createJourneyRuntime({ endpoint: managed?.endpoint, cognitionOverrides: options.cognitionProfile ? { COGNITION_PROFILE: options.cognitionProfile } : undefined }); await runtime.backend.start();
