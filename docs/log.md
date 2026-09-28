@@ -2,6 +2,8 @@
 
 ## 2026-09-28
 
+- Added one validated dotenv-aware cognition configuration, four routing profiles, conditional hosted Laya and Vision, OpenAI-compatible Spark reasoning, structurally triggered Pi cloud escalation, bounded observable retries, safe CLI/API metadata, per-journey profile overrides, and deployment-aware Gradio settings.
+
 - Tightened requested-trace semantics so a failed trace finalization produces a
   structured `trace_error` instead of a completed result without its artifact.
 - Expanded OpenAPI request/response schemas, made doctor model smoke perform a

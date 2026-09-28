@@ -69,6 +69,20 @@ Public submissions reject local, loopback, private, link-local, metadata, and
 non-HTTP URLs. Set `JOURNEYTEST_ALLOW_PRIVATE_NETWORKS=1` only for controlled
 local fixture testing.
 
+## Cognition profiles and settings
+
+JourneyTest routes cognition through four profiles: `local-cloud`, `local-spark-cloud`, `dual-laya-cloud`, and `dual-laya-spark-cloud`. Local Laya is always the normal System-1 path; hosted Laya and Vision are conditional, Spark is optional local System 2, and Pi cloud reasoning is the validated escalation authority.
+
+For localhost:
+
+```bash
+cp .env.example .env.local
+# edit endpoints and keys
+journeytest ui
+```
+
+For Hugging Face, configure non-secret flags/endpoints/models as Space Variables and `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `LAYA_HOSTED_API_KEY`, `LAYA_VISION_API_KEY`, and `SPARK_OPENAI_API_KEY` as Space Secrets. The Settings panel is session-scoped on Space and never writes `.env.local`. Use `journeytest info --json` for a secret-free configuration summary, or override one run with `--cognition-profile local-cloud`.
+
 ## Documentation
 
 Durable project documentation lives in the OKF-style bundle under [`docs/`](docs/index.md)

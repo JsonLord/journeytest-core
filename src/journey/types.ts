@@ -52,6 +52,8 @@ export const JourneyRequestSchema = z.object({
   screenshots: z.boolean().default(true),
   trace: z.boolean().default(false),
   confidenceThreshold: z.number().min(0).max(1).default(0.15),
+  cognitionProfile: z.enum(["local-cloud", "local-spark-cloud", "dual-laya-cloud", "dual-laya-spark-cloud"]).optional(),
+  cognitionOptions: z.object({ hostedVerification: z.boolean().optional(), vision: z.boolean().optional(), cloudTerminalVerification: z.boolean().optional() }).strict().optional(),
   successCriteria: z.array(SuccessCriterionSchema).max(12).default([]),
 }).strict();
 
@@ -74,6 +76,7 @@ export const JourneyResultSchema = z.object({
   status: z.enum(["completed", "blocked", "error", "cancelled"]),
   goal: z.string(), start_url: z.string(), final_url: z.string(), duration_ms: z.number().int().nonnegative(), step_count: z.number().int().nonnegative(),
   termination: z.object({ reason: z.string(), message: z.string().optional() }).strict(),
+  cognition: z.object({ profile: z.enum(["local-cloud", "local-spark-cloud", "dual-laya-cloud", "dual-laya-spark-cloud"]), evidence: z.array(z.unknown()) }).strict().optional(),
   reasoning: z.object({ state: ReasoningStateSchema, verdict: ReasoningVerdictSchema.optional(), last_assessment: ReasoningAssessmentSchema.optional() }).strict().optional(),
   steps: z.array(JourneyStepSchema), events: z.array(z.object({ type: z.string(), timestamp: z.string().datetime(), data: z.unknown().optional() }).strict()),
   artifacts: z.object({ result: z.string().optional(), screenshots: z.array(z.string()), trace: z.string().optional() }).strict(),

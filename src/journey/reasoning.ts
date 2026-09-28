@@ -43,7 +43,7 @@ export type ReasoningTrigger = "termination_candidate" | "stuck" | "action_failu
 export interface ReasoningInitContext { goal: string; successCriteria: SuccessCriterion[]; context: Record<string, unknown>; signal: AbortSignal }
 export interface ReasoningAssessmentInput { state: ReasoningState; trigger: ReasoningTrigger; observation: Observation; recentActions: Array<{ decision: AgentDecision; result?: string }>; layaDecision?: AgentDecision; progress: { urlChanged: boolean; repeatedActionCount: number; noProgressSteps: number }; signal: AbortSignal }
 export interface ReasoningFinalInput extends ReasoningAssessmentInput { termination: { reason: string; message?: string }; assessment?: ReasoningAssessment }
-export interface ReasoningCallMetadata { provider: string; model: string; latencyMs: number; tokens?: number; cost?: number }
+export interface ReasoningCallMetadata { provider: string; model: string; latencyMs: number; tokens?: number; cost?: number; attempts?: number; retryEvents?: Array<{ backend: string; attempt: number; failureClass?: string; latencyMs: number; success: boolean }>; escalated?: boolean; escalationReason?: string }
 export interface ReasoningResponse<T> { value: T; metadata: ReasoningCallMetadata }
 export interface ReasoningController {
   readonly provider: string; readonly model: string;
@@ -55,7 +55,7 @@ export interface ReasoningController {
 export interface PiReasoningControllerOptions { provider?: Provider; modelId?: string; model?: Model<any>; thinkingLevel?: "low" | "medium" | "high"; getApiKey?: (provider: string) => Promise<string | undefined> | string | undefined }
 export class PiReasoningController implements ReasoningController {
   readonly provider: string; readonly model: string;
-  private readonly piModel: Model<any>; private readonly thinkingLevel: "low" | "medium" | "high";
+  private readonly piModel: Model<any>; private readonly thinkingLevel: "low" | "medium" | "high"; private retryInstruction?: string;
   constructor(private readonly options: PiReasoningControllerOptions) {
     this.piModel = options.model ?? getModel(options.provider as KnownProvider, options.modelId as never);
     this.provider = this.piModel.provider; this.model = this.piModel.id; this.thinkingLevel = options.thinkingLevel ?? "medium";
@@ -67,11 +67,13 @@ export class PiReasoningController implements ReasoningController {
   }
   assess(input: ReasoningAssessmentInput) { return this.prompt(ReasoningAssessmentSchema, `Assess journey progress. Return a journey-level decision only; never return browser commands. DONE only with evidence the whole goal is satisfied. BLOCKED only after reasonable exploration proves no supported progress. REPLAN when a different subgoal is useful.\n${JSON.stringify(compactInput(input))}`, input.signal); }
   finalize(input: ReasoningFinalInput) { return this.prompt(ReasoningVerdictSchema, `Return the final structured journey verdict from the evidence. Do not expose chain-of-thought; rationale must be short and public.\n${JSON.stringify({ ...compactInput(input), termination: input.termination, assessment: input.assessment })}`, input.signal); }
+  setRetryInstruction(instruction: string) { this.retryInstruction = instruction; }
   private async prompt<T>(schema: z.ZodType<T>, prompt: string, signal: AbortSignal): Promise<ReasoningResponse<T>> {
     const started = Date.now();
     const agent = new Agent({ initialState: { systemPrompt: "You are JourneyTest's System-2 supervisor. Respond with one JSON object matching the requested shape. You can assess evidence but cannot execute actions.", model: this.piModel, thinkingLevel: this.thinkingLevel, tools: [] }, getApiKey: this.options.getApiKey, toolExecution: "sequential" });
     const abort = () => agent.abort(); signal.addEventListener("abort", abort, { once: true });
-    try { await agent.prompt(`${prompt}\nRequired JSON schema:\n${JSON.stringify(z.toJSONSchema(schema))}`); } finally { signal.removeEventListener("abort", abort); }
+    const retryInstruction = this.retryInstruction; this.retryInstruction = undefined;
+    try { await agent.prompt(`${prompt}\nRequired JSON schema:\n${JSON.stringify(z.toJSONSchema(schema))}${retryInstruction ? `\nRetry instruction: ${retryInstruction}` : ""}`); } finally { signal.removeEventListener("abort", abort); }
     if (agent.state.errorMessage) throw new Error(`Pi reasoning provider error: ${agent.state.errorMessage}`);
     const message = [...agent.state.messages].reverse().find(item => item.role === "assistant");
     const text = message?.role === "assistant" ? message.content.filter(item => item.type === "text").map(item => item.text).join("\n") : "";

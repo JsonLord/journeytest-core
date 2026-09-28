@@ -1,17 +1,19 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { BrowserDriver } from "../drivers/types.js";
-import { evaluateSuccessCriteria, type ReasoningAssessment, type ReasoningController, type ReasoningState, type ReasoningTrigger, type ReasoningVerdict } from "./reasoning.js";
+import { evaluateSuccessCriteria, type ReasoningAssessment, type ReasoningAssessmentInput, type ReasoningController, type ReasoningResponse, type ReasoningState, type ReasoningTrigger, type ReasoningVerdict } from "./reasoning.js";
+import type { CognitionEvidence, CognitionRouter } from "./cognition.js";
 import { AgentDecisionSchema, JourneyRequestSchema, JourneyResultSchema, type AgentDecision, type JourneyAgent, type JourneyContext, type JourneyResult, type JourneyStep, type Observation, type ValueProvider } from "./types.js";
 
-export interface JourneyRunnerOptions { driver: BrowserDriver; agent: JourneyAgent; outputDir: string; valueProvider?: ValueProvider; reasoningController?: ReasoningController; reasoningCheckpointEveryNSteps?: number; noProgressThreshold?: number }
+export interface JourneyRunnerOptions { driver: BrowserDriver; agent?: JourneyAgent; cognitionRouter?: CognitionRouter; outputDir: string; valueProvider?: ValueProvider; reasoningController?: ReasoningController; reasoningCheckpointEveryNSteps?: number; noProgressThreshold?: number }
 
 export class JourneyRunner {
   constructor(private readonly options: JourneyRunnerOptions) {}
   async run(id: string, rawRequest: unknown, signal = new AbortController().signal): Promise<JourneyResult> {
     const request = JourneyRequestSchema.parse(rawRequest); const started = Date.now(); const runDir = join(this.options.outputDir, id); const screenshotDir = join(runDir, "screenshots"); const tracePath = join(runDir, "trace.json");
     await mkdir(screenshotDir, { recursive: true });
-    const steps: JourneyStep[] = []; const events: JourneyResult["events"] = []; const recentActions: Array<{ decision: AgentDecision; result?: string }> = [];
+    if (!this.options.agent && !this.options.cognitionRouter) throw new Error("JourneyRunner requires an agent or CognitionRouter");
+    const steps: JourneyStep[] = []; const events: JourneyResult["events"] = []; const recentActions: Array<{ decision: AgentDecision; result?: string }> = []; const cognitionEvidence: CognitionEvidence[] = [];
     let termination: JourneyResult["termination"] = { reason: "max_steps", message: "Maximum steps reached" }; let status: JourneyResult["status"] = "error"; let finalUrl = request.url;
     let previousDecision: AgentDecision | undefined; let previousResult: string | undefined; let previousObservation: Observation | undefined; let noProgressSteps = 0; let repeatedActionCount = 0;
     let traceStarted = false; let traceWritten = false; let traceError: Error | undefined; let reasoningState: ReasoningState | undefined; let lastAssessment: ReasoningAssessment | undefined; let verdict: ReasoningVerdict | undefined;
@@ -26,7 +28,8 @@ export class JourneyRunner {
       await this.options.driver.start({ runId: id, runDir, baseUrl: request.url, allowedOrigins: [new URL(request.url).origin], sessionName: id });
       if (request.trace) { if (!this.options.driver.startTrace || !this.options.driver.stopTrace) throw new Error("Browser driver does not support trace capture"); await this.options.driver.startTrace(tracePath); traceStarted = true; }
       await this.options.driver.open(request.url);
-      if (this.options.reasoningController) { const response = await this.options.reasoningController.initialize({ goal: request.goal, successCriteria: request.successCriteria, context: request.context, signal }); reasoningState = response.value; recordReasoning("initialization", response); }
+      if (this.options.cognitionRouter) { const response = await this.options.cognitionRouter.initializeJourney({ goal: request.goal, successCriteria: request.successCriteria, context: request.context, signal }); reasoningState = response.value; recordReasoning("initialization", response); }
+      else if (this.options.reasoningController) { const response = await this.options.reasoningController.initialize({ goal: request.goal, successCriteria: request.successCriteria, context: request.context, signal }); reasoningState = response.value; recordReasoning("initialization", response); }
       else reasoningState = { goal: request.goal, success_criteria: request.successCriteria };
       for (let n = 1; n <= request.maxSteps; n++) {
         abort(); const stepStarted = Date.now(); const observationStarted = Date.now(); const observation = await observe(this.options.driver); const observationMs = Date.now() - observationStarted;
@@ -34,7 +37,7 @@ export class JourneyRunner {
         const candidates = observation.elements.map((element, index) => ({ index, ref: element.ref, role: element.role, name: element.name, operations: element.operations }));
         const inferenceStarted = Date.now(); let decision: AgentDecision | undefined; let validation: JourneyStep["validation"] = "OK";
         const agentContext: JourneyContext = { journeyId: id, goal: request.goal, subgoal: reasoningState.subgoal, metadata: request.context, signal };
-        try { decision = AgentDecisionSchema.parse(await this.options.agent.decide(observation, { step: n, previousDecision, previousResult }, agentContext)); metrics.laya_calls++; }
+        try { if (this.options.cognitionRouter) { const routed = await this.options.cognitionRouter.chooseAction({ observation, state: { step: n, previousDecision, previousResult }, context: agentContext, noProgress: noProgressSteps > 0 }); decision = AgentDecisionSchema.parse(routed.decision); cognitionEvidence.push(routed.evidence); events.push({ type: "cognition.action", timestamp: new Date().toISOString(), data: routed.evidence }); } else decision = AgentDecisionSchema.parse(await this.options.agent!.decide(observation, { step: n, previousDecision, previousResult }, agentContext)); metrics.laya_calls++; }
         catch (error) { termination = { reason: "invalid_decision", message: error instanceof Error ? error.message : String(error) }; validation = "INVALID"; steps.push(makeStep()); break; }
         const inferenceMs = decision.diagnostics?.inferenceMs ?? Date.now() - inferenceStarted; metrics.laya_total_ms += inferenceMs;
         repeatedActionCount = sameDecision(previousDecision, decision) ? repeatedActionCount + 1 : 1;
@@ -53,20 +56,21 @@ export class JourneyRunner {
           } else if (decision.operation === "DONE" && deterministic?.result === "no") {
             lastAssessment = { decision: "CONTINUE", goal_satisfied: false, blocked: false, progress: "partial", reason_code: "deterministic_criteria_not_met", confidence: 1 };
             recordReasoning("termination_candidate", { value: lastAssessment, metadata: { provider: "deterministic", model: "explicit-criteria", latencyMs: 0 } }, true);
-          } else if (this.options.reasoningController) {
+          } else if (this.options.cognitionRouter || this.options.reasoningController) {
             const trigger: ReasoningTrigger = candidate ? "termination_candidate" : stuck ? "stuck" : lowConfidence ? "low_confidence" : "periodic";
-            const response = await this.options.reasoningController.assess({ state: reasoningState, trigger, observation, recentActions, layaDecision: decision, progress: { urlChanged: previousObservation?.url !== observation.url, repeatedActionCount, noProgressSteps }, signal });
-            lastAssessment = response.value; recordReasoning(trigger, response); if (lastAssessment.next_subgoal) reasoningState = { ...reasoningState, subgoal: lastAssessment.next_subgoal };
+            const input: ReasoningAssessmentInput = { state: reasoningState, trigger, observation, recentActions, layaDecision: decision, progress: { urlChanged: previousObservation?.url !== observation.url, repeatedActionCount, noProgressSteps }, signal };
+            const response: ReasoningResponse<ReasoningAssessment> = this.options.cognitionRouter ? await this.options.cognitionRouter.assessJourney(input) : await this.options.reasoningController!.assess(input);
+            lastAssessment = response.value; recordReasoning(trigger, response); if (response.value.next_subgoal) reasoningState = { ...reasoningState, subgoal: response.value.next_subgoal };
           } else if (candidate) {
             // Explicit compatibility mode: without System 2, preserve the historical Laya-only behavior.
             lastAssessment = { decision: decision.operation === "DONE" ? "DONE" : "BLOCKED", goal_satisfied: decision.operation === "DONE", blocked: decision.operation === "BLOCKED", progress: decision.operation === "DONE" ? "complete" : "none", reason_code: "reasoning_disabled", confidence: decision.confidence };
           }
           if (lastAssessment?.decision === "DONE" || lastAssessment?.decision === "BLOCKED") {
             status = lastAssessment.decision === "DONE" ? "completed" : "blocked"; termination = { reason: lastAssessment.decision.toLowerCase(), message: lastAssessment.rationale ?? decision.reason }; steps.push(makeStep());
-            if (!verdict && this.options.reasoningController) { const response = await this.options.reasoningController.finalize({ state: reasoningState, trigger: "finalize", observation, recentActions, layaDecision: decision, progress: { urlChanged: previousObservation?.url !== observation.url, repeatedActionCount, noProgressSteps }, termination, assessment: lastAssessment, signal }); verdict = response.value; recordReasoning("finalize", response); }
+            if (!verdict && (this.options.cognitionRouter || this.options.reasoningController)) { const input = { state: reasoningState, trigger: "finalize" as const, observation, recentActions, layaDecision: decision, progress: { urlChanged: previousObservation?.url !== observation.url, repeatedActionCount, noProgressSteps }, termination, assessment: lastAssessment, signal }; const response = this.options.cognitionRouter ? await this.options.cognitionRouter.finalizeJourney(input) : await this.options.reasoningController!.finalize(input); verdict = response.value; recordReasoning("finalize", response); }
             break;
           }
-          if (candidate || (lowConfidence && this.options.reasoningController)) { steps.push(makeStep()); previousDecision = decision; previousObservation = observation; continue; }
+          if (candidate || (lowConfidence && (this.options.reasoningController || this.options.cognitionRouter))) { steps.push(makeStep()); previousDecision = decision; previousObservation = observation; continue; }
         }
         if (lowConfidence) { validation = "LOW_CONFIDENCE"; termination = { reason: "low_confidence", message: `Confidence ${decision.confidence} is below ${request.confidenceThreshold}` }; steps.push(makeStep()); break; }
         if ((decision.operation === "TYPE_TEXT" || decision.operation === "SELECT") && decision.elementIndex !== undefined) {
@@ -84,7 +88,8 @@ export class JourneyRunner {
     finally { finalUrl = await this.options.driver.getUrl().catch(() => finalUrl); if (traceStarted) { try { await this.options.driver.stopTrace?.(tracePath); traceWritten = true; } catch (error) { traceError = error instanceof Error ? error : new Error(String(error)); } } await this.options.driver.close().catch(() => undefined); }
     if (request.trace && !traceWritten) { status = "error"; termination = { reason: "trace_error", message: traceError?.message ?? "Browser trace was not finalized" }; }
     metrics.journey_ms = Date.now() - started;
-    const result = JourneyResultSchema.parse({ schema_version: "1", journey_id: id, status, goal: request.goal, start_url: request.url, final_url: finalUrl, duration_ms: metrics.journey_ms, step_count: steps.length, termination, steps, events, artifacts: { result: join(runDir, "journey-result.json"), screenshots: steps.flatMap(s => s.screenshot ? [s.screenshot] : []), ...(traceWritten ? { trace: tracePath } : {}) }, metrics, context: request.context, agent: { type: this.options.agent.name, backend: this.options.agent.backend, model: this.options.agent.model, revision: this.options.agent.revision }, reasoning: reasoningState ? { state: reasoningState, verdict, last_assessment: lastAssessment } : undefined });
+    const agent = this.options.agent;
+    const result = JourneyResultSchema.parse({ schema_version: "1", journey_id: id, status, goal: request.goal, start_url: request.url, final_url: finalUrl, duration_ms: metrics.journey_ms, step_count: steps.length, termination, steps, events, artifacts: { result: join(runDir, "journey-result.json"), screenshots: steps.flatMap(s => s.screenshot ? [s.screenshot] : []), ...(traceWritten ? { trace: tracePath } : {}) }, metrics, context: request.context, agent: { type: agent?.name ?? "cognition-router", backend: agent?.backend ?? "routed", model: agent?.model, revision: agent?.revision }, cognition: this.options.cognitionRouter ? { profile: this.options.cognitionRouter.profile, evidence: cognitionEvidence } : undefined, reasoning: reasoningState ? { state: reasoningState, verdict, last_assessment: lastAssessment } : undefined });
     await writeFile(join(runDir, "journey-result.json"), `${JSON.stringify(result, null, 2)}\n`); return result;
   }
 }
