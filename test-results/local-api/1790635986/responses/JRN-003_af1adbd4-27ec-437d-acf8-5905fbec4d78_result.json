@@ -1,0 +1,40 @@
+{
+  "schema_version": "1",
+  "journey_id": "af1adbd4-27ec-437d-acf8-5905fbec4d78",
+  "status": "error",
+  "goal": "Navigate endlessly",
+  "start_url": "https://example.com",
+  "final_url": "https://example.com",
+  "duration_ms": 2104,
+  "step_count": 0,
+  "termination": {
+    "reason": "error",
+    "message": "Journey timeout"
+  },
+  "reasoning": {
+    "state": {
+      "goal": "Navigate endlessly",
+      "success_criteria": []
+    }
+  },
+  "steps": [],
+  "events": [],
+  "artifacts": {
+    "result": "test-results/local-api/runtime-runs/af1adbd4-27ec-437d-acf8-5905fbec4d78/journey-result.json",
+    "screenshots": []
+  },
+  "metrics": {
+    "journey_ms": 2104,
+    "laya_calls": 1,
+    "laya_total_ms": 0,
+    "reasoning_calls": 0,
+    "reasoning_total_ms": 0,
+    "reasoning_tokens": 0,
+    "reasoning_cost": 0
+  },
+  "context": {},
+  "agent": {
+    "type": "local-campaign-fixture",
+    "backend": "deterministic-stub"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "JourneyTest",
+  "schema_version": "1",
+  "model": "unchanged-not-invoked",
+  "laya": {
+    "ok": true,
+    "backend": "local-campaign-stub"
+  },
+  "cognition": {
+    "campaign": "local",
+    "browser": "stubbed",
+    "system1": "stubbed",
+    "system2": "unavailable"
+  }
+}

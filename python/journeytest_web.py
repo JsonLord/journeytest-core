@@ -1,4 +1,5 @@
 """Thin Gradio surface over the authoritative JourneyTest HTTP/service runtime."""
+from contextlib import asynccontextmanager
 import json, os, time, urllib.error, urllib.request
 import gradio as gr
 from fastapi import FastAPI, Request
@@ -158,7 +159,18 @@ def credential_status(name):
 
 def build_app():
     demo = build_ui()
-    app = FastAPI(title="JourneyTest API Proxy", docs_url="/docs")
+    @asynccontextmanager
+    async def lifespan(app):
+        # One pool is safe to reuse; transport errors do not poison httpx's
+        # client. Explicit connect/read/write/pool limits keep failures
+        # distinguishable without extending journey execution timeouts.
+        app.state.upstream = httpx.AsyncClient(timeout=httpx.Timeout(connect=5, read=30, write=10, pool=5))
+        try:
+            yield
+        finally:
+            await app.state.upstream.aclose()
+
+    app = FastAPI(title="JourneyTest API Proxy", docs_url="/docs", lifespan=lifespan)
     try:
         _, public_openapi = request("/api/v1/openapi.json")
         app.openapi = lambda: public_openapi
@@ -166,24 +178,30 @@ def build_app():
         pass
 
     @app.get("/health")
-    async def health_endpoint():
-        async with httpx.AsyncClient(timeout=10) as client:
-            upstream = await client.get(f"{API}/health")
-            return Response(upstream.content, status_code=upstream.status_code, media_type=upstream.headers.get("content-type"))
+    async def health_endpoint(incoming: Request):
+        return await proxy_request(incoming, f"{API}/health", timeout=10)
 
     @app.get("/api-docs")
-    async def api_docs_endpoint():
-        async with httpx.AsyncClient(timeout=10) as client:
-            upstream = await client.get(f"{API}/api-docs")
-            return Response(upstream.content, status_code=upstream.status_code, media_type=upstream.headers.get("content-type"))
+    async def api_docs_endpoint(incoming: Request):
+        return await proxy_request(incoming, f"{API}/api-docs", timeout=10)
 
     @app.api_route("/api/{path:path}", methods=["GET", "POST"])
     async def api_proxy(path: str, incoming: Request):
-        async with httpx.AsyncClient(timeout=30) as client:
-            upstream = await client.request(incoming.method, f"{API}/api/{path}", content=await incoming.body(), headers={"content-type": incoming.headers.get("content-type", "application/json")})
-        return Response(upstream.content, status_code=upstream.status_code, media_type=upstream.headers.get("content-type"))
+        return await proxy_request(incoming, f"{API}/api/{path}")
 
     return gr.mount_gradio_app(app, demo, path="/"), demo
+
+
+async def proxy_request(incoming, url, timeout=None):
+    client = incoming.app.state.upstream
+    try:
+        upstream = await client.request(incoming.method, url, content=await incoming.body(), headers={"content-type": incoming.headers.get("content-type", "application/json")}, timeout=timeout)
+    except httpx.TimeoutException:
+        return Response(json.dumps({"error": {"code": "UPSTREAM_TIMEOUT", "message": "JourneyTest API did not respond before the proxy deadline.", "retryable": True}}), status_code=504, media_type="application/json")
+    except httpx.RequestError:
+        return Response(json.dumps({"error": {"code": "UPSTREAM_UNAVAILABLE", "message": "JourneyTest API is temporarily unavailable.", "retryable": True}}), status_code=502, media_type="application/json")
+    headers = {key: value for key, value in upstream.headers.items() if key.lower() in {"content-type", "content-disposition", "cache-control"}}
+    return Response(upstream.content, status_code=upstream.status_code, headers=headers)
 
 
 if __name__ == "__main__":

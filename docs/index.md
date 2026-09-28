@@ -17,6 +17,8 @@ boundaries that should stay current as the package evolves.
 - [Upstream sources](upstream-sources.md): Audited provenance and selective
   reuse decisions.
 - [Implementation gates](implementation-notes.md): Gates A through F.
+- [PR 8 runtime investigation](investigations/pr8-runtime-analysis.md): Live
+  evidence reconciliation, failure layers, and runtime-hardening rationale.
 
 - [Product](product/index.md): What JourneyTest is and which features it
   exposes.

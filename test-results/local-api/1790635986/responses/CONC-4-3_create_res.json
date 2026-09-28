@@ -1,0 +1,8 @@
+{
+  "status": 202,
+  "content_type": "application/json; charset=utf-8",
+  "body": {
+    "journey_id": "7e2b6af6-0239-4874-ae78-350b43b8c7d9",
+    "status": "created"
+  }
+}

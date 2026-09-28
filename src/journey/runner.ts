@@ -25,6 +25,7 @@ export class JourneyRunner {
       events.push({ type: "reasoning.assessment", timestamp: new Date().toISOString(), data: { trigger, provider: response.metadata.provider, model: response.metadata.model, latency_ms: response.metadata.latencyMs, decision: value.decision, confidence: value.confidence, reason_code: value.reason_code, next_subgoal: value.next_subgoal, deterministic_criteria_avoided_call: deterministic } });
     };
     try {
+      abort();
       await this.options.driver.start({ runId: id, runDir, baseUrl: request.url, allowedOrigins: [new URL(request.url).origin], sessionName: id });
       if (request.trace) { if (!this.options.driver.startTrace || !this.options.driver.stopTrace) throw new Error("Browser driver does not support trace capture"); await this.options.driver.startTrace(tracePath); traceStarted = true; }
       await this.options.driver.open(request.url);
@@ -38,7 +39,8 @@ export class JourneyRunner {
         const inferenceStarted = Date.now(); let decision: AgentDecision | undefined; let validation: JourneyStep["validation"] = "OK";
         const agentContext: JourneyContext = { journeyId: id, goal: request.goal, subgoal: reasoningState.subgoal, metadata: request.context, signal };
         try { if (this.options.cognitionRouter) { const routed = await this.options.cognitionRouter.chooseAction({ observation, state: { step: n, previousDecision, previousResult }, context: agentContext, noProgress: noProgressSteps > 0 }); decision = AgentDecisionSchema.parse(routed.decision); cognitionEvidence.push(routed.evidence); events.push({ type: "cognition.action", timestamp: new Date().toISOString(), data: routed.evidence }); } else decision = AgentDecisionSchema.parse(await this.options.agent!.decide(observation, { step: n, previousDecision, previousResult }, agentContext)); metrics.laya_calls++; }
-        catch (error) { termination = { reason: "invalid_decision", message: error instanceof Error ? error.message : String(error) }; validation = "INVALID"; steps.push(makeStep()); break; }
+        catch (error) { if (signal.aborted) throw error; termination = { reason: "invalid_decision", message: error instanceof Error ? error.message : String(error) }; validation = "INVALID"; steps.push(makeStep()); break; }
+        abort();
         const inferenceMs = decision.diagnostics?.inferenceMs ?? Date.now() - inferenceStarted; metrics.laya_total_ms += inferenceMs;
         repeatedActionCount = sameDecision(previousDecision, decision) ? repeatedActionCount + 1 : 1;
         if (decision.elementIndex !== undefined && !candidates[decision.elementIndex]) { validation = "INVALID"; termination = { reason: "invalid_element_index", message: `Element ${decision.elementIndex} was not offered` }; steps.push(makeStep()); break; }
@@ -84,7 +86,7 @@ export class JourneyRunner {
         events.push({ type: "action.executed", timestamp: new Date().toISOString(), data: { step: n, operation: decision.operation } });
         function makeStep(): JourneyStep { return { step: n, timestamp: new Date().toISOString(), url: observation.url, candidates, scopedCandidates: decision?.diagnostics?.scopedIndices, chunking: decision?.diagnostics?.chunking, decision, validation, timings: { observationMs, inferenceMs: decision?.diagnostics?.inferenceMs ?? Date.now() - inferenceStarted, actionMs: 0, stepMs: Date.now() - stepStarted } }; }
       }
-    } catch (error) { termination = { reason: signal.aborted ? "cancelled" : "error", message: error instanceof Error ? error.message : String(error) }; status = signal.aborted ? "cancelled" : "error"; }
+    } catch (error) { termination = { reason: signal.aborted ? "cancelled" : "error", message: error instanceof Error ? error.message : String(error) }; status = signal.aborted ? "cancelled" : "error"; if (signal.aborted) events.push({ type: "journey.cancelled", timestamp: new Date().toISOString() }); }
     finally { finalUrl = await this.options.driver.getUrl().catch(() => finalUrl); if (traceStarted) { try { await this.options.driver.stopTrace?.(tracePath); traceWritten = true; } catch (error) { traceError = error instanceof Error ? error : new Error(String(error)); } } await this.options.driver.close().catch(() => undefined); }
     if (request.trace && !traceWritten) { status = "error"; termination = { reason: "trace_error", message: traceError?.message ?? "Browser trace was not finalized" }; }
     metrics.journey_ms = Date.now() - started;
