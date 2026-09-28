@@ -54,7 +54,7 @@ Space detection uses `SPACE_ID`, `SPACE_HOST`, or `SYSTEM=spaces`. Put these in
 `LAYA_HOSTED_ENABLED`, `LAYA_HOSTED_BASE_URL`, `LAYA_VISION_ENABLED`,
 `LAYA_VISION_BASE_URL`, `SPARK_REASONING_ENABLED`, `SPARK_OPENAI_BASE_URL`,
 `SPARK_MODEL`, `CLOUD_REASONING_ENABLED`, `REASONING_PROVIDER`,
-`REASONING_MODEL`, `REASONING_THINKING_LEVEL`, timeout values, and retry values.
+`REASONING_MODEL`, `REASONING_THINKING_LEVEL`, optional `OPENAI_COMPATIBLE_URL`, timeout values, and retry values.
 
 Put these in **Space Secrets**: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
 `GEMINI_API_KEY`, `LAYA_HOSTED_API_KEY`, `LAYA_VISION_API_KEY`, and
@@ -68,6 +68,9 @@ required for public, ungated Hub resources; when absent, JourneyTest reports a
 warning rather than failing readiness. Native `SPACE_ID`, `SPACE_HOST`, and
 `SYSTEM=spaces` markers detect Spaces—there are no `HF_PROFILE` or `HF_SPACE`
 requirements.
+
+
+When `OPENAI_COMPATIBLE_URL` is set, cloud System 2 uses that endpoint's OpenAI-compatible `chat/completions` route instead of the Pi transport. The model remains `REASONING_MODEL`, and authentication uses `OPENAI_API_KEY`. On Hugging Face Spaces, define the URL as a Space Variable and the key as a Space Secret. An empty key is omitted rather than sent as an empty Bearer token. `OPENAI_COMPATIBLE_BASE_URL` is accepted as an alias.
 
 Only the selected cloud provider credential is expected: `OPENAI_API_KEY` for
 OpenAI, `ANTHROPIC_API_KEY` for Anthropic, or `GEMINI_API_KEY` for Gemini.

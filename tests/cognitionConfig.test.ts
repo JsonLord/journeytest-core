@@ -57,3 +57,11 @@ describe("session credential normalization", () => {
     expect(applySessionCredentialOverrides(config, { OPENAI_API_KEY: " session-key " }).credentials.openai).toBe("session-key");
   });
 });
+
+describe("OpenAI-compatible Space configuration", () => {
+  it("loads the endpoint and OPENAI_API_KEY from native Space environment values", () => {
+    const config = loadRuntimeCognitionConfig({ env: { SPACE_ID: "test/journeytest", CLOUD_REASONING_ENABLED: "true", REASONING_PROVIDER: "openai", REASONING_MODEL: "custom-model", OPENAI_COMPATIBLE_URL: "https://inference.example/v1", OPENAI_API_KEY: "space-secret" } });
+    expect(config.cloud.openAiCompatibleUrl).toBe("https://inference.example/v1"); expect(config.credentials.openai).toBe("space-secret"); const status = cognitionConfigStatus(config, { SPACE_ID: "test/journeytest" }); expect(status.endpoints.openAiCompatible).toBe("inference.example"); expect(JSON.stringify(status)).not.toContain("space-secret"); expect(status.credentialDiagnostics.required).toEqual([]);
+  });
+  it("requires only OPENAI_API_KEY diagnostics when a compatible URL is selected", () => { const config = loadRuntimeCognitionConfig({ env: { CLOUD_REASONING_ENABLED: "true", REASONING_PROVIDER: "anthropic", REASONING_MODEL: "custom-model", OPENAI_COMPATIBLE_URL: "https://inference.example/v1", ANTHROPIC_API_KEY: "not-used" } }); expect(cognitionConfigStatus(config, {}).credentialDiagnostics.required).toEqual(["OPENAI_API_KEY"]); });
+});

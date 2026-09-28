@@ -83,7 +83,7 @@ journeytest ui
 
 For Hugging Face, configure non-secret flags/endpoints/models as Space Variables and `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `LAYA_HOSTED_API_KEY`, `LAYA_VISION_API_KEY`, and `SPARK_OPENAI_API_KEY` as Space Secrets. The Settings panel is session-scoped on Space and never writes `.env.local`. Use `journeytest info --json` for a secret-free configuration summary, or override one run with `--cognition-profile local-cloud`.
 
-Configure only the cloud key selected by `REASONING_PROVIDER`. Hosted Laya,
+Set `OPENAI_COMPATIBLE_URL` to route cloud System-2 requests through an OpenAI-compatible `chat/completions` endpoint; it uses `OPENAI_API_KEY` from local environment or Hugging Face Space Secrets. Configure only the cloud key selected by `REASONING_PROVIDER`. Hosted Laya,
 Vision, and Spark keys are optional unless their matching `*_AUTH_REQUIRED`
 flag is enabled. `HF_TOKEN` is recommended for authenticated Hugging Face model
 downloads but is only required for private or gated resources; public models

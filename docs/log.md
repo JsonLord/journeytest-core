@@ -2,6 +2,8 @@
 
 ## 2026-09-28
 
+- Added `OPENAI_COMPATIBLE_URL` cloud reasoning support using `OPENAI_API_KEY`, including Hugging Face Space environment/secret discovery and secret-free endpoint status.
+
 - Fixed Space UI startup by declaring every credential control before callback
   registration, added import-safe Gradio construction tests, made credential
   diagnostics profile/provider/auth aware, normalized session secrets, and made
