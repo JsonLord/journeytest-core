@@ -1,0 +1,79 @@
+{
+  "deployment": {
+    "endpoint": "https://leon4gr45-nova-right-nav.hf.space",
+    "space": "Leon4gr45/nova-right-nav",
+    "hardware": "cpu-basic",
+    "backend": "systemone (laya-torch)",
+    "model": "ichenney/laya-browser-v32b",
+    "revision": "161d54d6000913ff279b0afd1ac77faef8685a9b"
+  },
+  "warm_latency": {
+    "runs": 15,
+    "accuracy": 1.0,
+    "p50_model_ms": 0.0,
+    "p95_model_ms": 0.0,
+    "p50_rtt_ms": 577.052870999978,
+    "p95_rtt_ms": 634.7482814999239
+  },
+  "candidate_scaling": {
+    "5": {
+      "p50_model_ms": 631.5,
+      "conf": 1.0
+    },
+    "10": {
+      "p50_model_ms": 662.5,
+      "conf": 1.0
+    },
+    "20": {
+      "p50_model_ms": 690.0,
+      "conf": 0.9998
+    },
+    "25": {
+      "p50_model_ms": 709.5,
+      "conf": 1.0
+    },
+    "40": {
+      "p50_model_ms": 732.0,
+      "conf": 0.9997
+    }
+  },
+  "done_cases": {
+    "done_1": {
+      "done_rate": 0.0,
+      "max_wrong_conf": 0.9575
+    },
+    "done_2": {
+      "done_rate": 0.0,
+      "max_wrong_conf": 0.9153
+    },
+    "done_3": {
+      "done_rate": 0.0,
+      "max_wrong_conf": 0.9956
+    }
+  },
+  "blocked_cases": {
+    "blocked_1": {
+      "blocked_rate": 0.0,
+      "max_wrong_conf": 0.9997
+    },
+    "blocked_2": {
+      "blocked_rate": 0.0,
+      "max_wrong_conf": 0.9999
+    },
+    "blocked_3": {
+      "blocked_rate": 0.0,
+      "max_wrong_conf": 1.0
+    }
+  },
+  "stability": {
+    "p50_model_ms": 0.0,
+    "p95_model_ms": 0.0,
+    "latency_drift_ms": 46.6,
+    "errors": 0
+  },
+  "overhead": {
+    "median_overhead_ms": 577.052870999978,
+    "p95_overhead_ms": 634.7482814999239
+  },
+  "contract_violations_count": 0
+}
