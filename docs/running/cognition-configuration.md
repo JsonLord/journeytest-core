@@ -54,7 +54,7 @@ Space detection uses `SPACE_ID`, `SPACE_HOST`, or `SYSTEM=spaces`. Put these in
 `LAYA_HOSTED_ENABLED`, `LAYA_HOSTED_BASE_URL`, `LAYA_VISION_ENABLED`,
 `LAYA_VISION_BASE_URL`, `SPARK_REASONING_ENABLED`, `SPARK_OPENAI_BASE_URL`,
 `SPARK_MODEL`, `CLOUD_REASONING_ENABLED`, `REASONING_PROVIDER`,
-`REASONING_MODEL`, `REASONING_THINKING_LEVEL`, optional `OPENAI_COMPATIBLE_URL`, timeout values, and retry values.
+`REASONING_MODEL`, `REASONING_THINKING_LEVEL`, `OPENAI_BASE_URL`, `OPENAI_MODEL`, optional OpenAI compatibility metadata, timeout values, and retry values.
 
 Put these in **Space Secrets**: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
 `GEMINI_API_KEY`, `LAYA_HOSTED_API_KEY`, `LAYA_VISION_API_KEY`, and
@@ -70,7 +70,7 @@ warning rather than failing readiness. Native `SPACE_ID`, `SPACE_HOST`, and
 requirements.
 
 
-When `OPENAI_COMPATIBLE_URL` is set, cloud System 2 uses that endpoint's OpenAI-compatible `chat/completions` route instead of the Pi transport. The model remains `REASONING_MODEL`, and authentication uses `OPENAI_API_KEY`. On Hugging Face Spaces, define the URL as a Space Variable and the key as a Space Secret. An empty key is omitted rather than sent as an empty Bearer token. `OPENAI_COMPATIBLE_BASE_URL` is accepted as an alias.
+When `OPENAI_BASE_URL` is set, cloud System 2 constructs a custom Pi model with the internal provider `journeytest-openai-compatible` and the `openai-completions` API. `OPENAI_MODEL` is canonical in this mode and need not exist in Pi’s registry. `OPENAI_API_KEY` is read from local configuration or a Space Secret. `OPENAI_CONTEXT_WINDOW` (default 32768) and `OPENAI_MAX_TOKENS` (default 4096) control metadata; developer-role and reasoning-effort compatibility default off.
 
 Only the selected cloud provider credential is expected: `OPENAI_API_KEY` for
 OpenAI, `ANTHROPIC_API_KEY` for Anthropic, or `GEMINI_API_KEY` for Gemini.
@@ -113,8 +113,4 @@ hard-coded allowlist. Unsupported pairs fail with the provider, model, failure
 category, and registry-derived supported values, never with an undefined-model
 property access.
 
-`REASONING_MODEL` is the only JourneyTest cloud model variable. `OPENAI_MODEL`
-is ignored. `OPENAI_BASE_URL` is also ignored by the Pi cloud path and must not
-be used to point Pi at Spark. Spark continues to use `SPARK_OPENAI_BASE_URL`.
-The separately explicit `OPENAI_COMPATIBLE_URL` selects JourneyTest's strict
-OpenAI-compatible reasoning transport when that behavior is intended.
+Registry mode is selected when `OPENAI_BASE_URL` is absent and uses `REASONING_PROVIDER` plus `REASONING_MODEL`. OpenAI-compatible mode is selected when `OPENAI_BASE_URL` is present and uses `OPENAI_MODEL`; it bypasses registry lookup. Spark remains separate on `SPARK_OPENAI_BASE_URL`. Diagnostics expose only the endpoint host and never the full URL or API key.

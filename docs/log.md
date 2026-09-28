@@ -2,6 +2,9 @@
 
 ## 2026-09-28
 
+- Corrected Pi cloud transport selection so `OPENAI_BASE_URL` and
+  `OPENAI_MODEL` construct an internal OpenAI Chat Completions model without a
+  bundled-registry lookup, while preserving registry mode when the URL is absent.
 - Replaced undefined Pi model dereferences with registry-backed provider/model
   validation, fail-fast cloud credential checks, safe info/doctor diagnostics,
   and an opt-in live reasoning smoke.

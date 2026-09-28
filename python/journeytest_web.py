@@ -57,10 +57,10 @@ def apply_settings(profile_label, hosted_verification, vision_enabled, terminal_
     configured = [name for name, value in zip(["OpenAI", "Anthropic", "Gemini", "Hosted Laya", "Laya Vision", "Spark"], secrets) if normalize_secret(value)]
     suffix = f" Session-only credentials supplied for: {', '.join(configured)}." if configured else ""
     return profile, hosted_verification, vision_enabled, terminal_verification, f"Applied `{profile}` for this browser session.{suffix} Credentials are not echoed or written."
-def save_settings(profile_label, hosted_enabled, hosted_url, vision_enabled, vision_url, spark_enabled, spark_url, spark_model, cloud_enabled, provider, model, attempts, *secrets):
+def save_settings(profile_label, hosted_enabled, hosted_url, vision_enabled, vision_url, spark_enabled, spark_url, spark_model, cloud_enabled, provider, openai_base_url, model, attempts, *secrets):
     if IS_SPACE: return "Running on Hugging Face Space. To persist credentials: Space → Settings → Repository secrets."
     keys = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "LAYA_HOSTED_API_KEY", "LAYA_VISION_API_KEY", "SPARK_OPENAI_API_KEY"]
-    body = {"COGNITION_PROFILE": PROFILE_LABELS[profile_label], "LAYA_HOSTED_ENABLED": str(hosted_enabled).lower(), "LAYA_HOSTED_BASE_URL": hosted_url or "", "LAYA_VISION_ENABLED": str(vision_enabled).lower(), "LAYA_VISION_BASE_URL": vision_url or "", "SPARK_REASONING_ENABLED": str(spark_enabled).lower(), "SPARK_OPENAI_BASE_URL": spark_url or "", "SPARK_MODEL": spark_model, "CLOUD_REASONING_ENABLED": str(cloud_enabled).lower(), "REASONING_PROVIDER": provider, "REASONING_MODEL": model, "CLOUD_MAX_ATTEMPTS": str(int(attempts))}
+    body = {"COGNITION_PROFILE": PROFILE_LABELS[profile_label], "LAYA_HOSTED_ENABLED": str(hosted_enabled).lower(), "LAYA_HOSTED_BASE_URL": hosted_url or "", "LAYA_VISION_ENABLED": str(vision_enabled).lower(), "LAYA_VISION_BASE_URL": vision_url or "", "SPARK_REASONING_ENABLED": str(spark_enabled).lower(), "SPARK_OPENAI_BASE_URL": spark_url or "", "SPARK_MODEL": spark_model, "CLOUD_REASONING_ENABLED": str(cloud_enabled).lower(), "REASONING_PROVIDER": provider, "OPENAI_BASE_URL": openai_base_url or "", "OPENAI_MODEL": model, "CLOUD_MAX_ATTEMPTS": str(int(attempts))}
     body.update(normalize_secrets(dict(zip(keys, secrets))))
     _, result = request("/api/v1/settings/local", "POST", body); return result["message"]
 def test_connections():
@@ -109,8 +109,9 @@ def build_ui():
             gr.Markdown("## Cloud System 2")
             with gr.Row():
                 cloud_enabled = gr.Checkbox(True, label="Cloud enabled")
-                provider = gr.Dropdown(["openai", "anthropic", "gemini"], value="openai", label="Provider")
-                reasoning_model = gr.Textbox(label="Reasoning model")
+                provider = gr.Dropdown(["openai", "anthropic", "gemini"], value="openai", label="Provider protocol")
+                openai_base_url = gr.Textbox(label="OpenAI-compatible Base URL")
+                reasoning_model = gr.Textbox(label="Model ID")
             gr.Markdown("Credentials are session-only unless **Save local configuration** is explicitly selected. Existing values are never loaded into these fields.")
             with gr.Row():
                 openai_key = gr.Textbox(label="OpenAI — " + credential_status("openai"), type="password")
@@ -146,7 +147,7 @@ def build_ui():
         run.click(run_journey, [url, goal, max_steps, timeout, screenshots, trace, mode, profile_state, hosted_verify_state, vision_state, terminal_verify_state, *secret_inputs, context, domains, confidence], [status, events, screenshot, result, raw])
         apply_button.click(apply_settings, [profile_select, hosted_verify, vision_toggle, terminal_verify, *secret_inputs], [profile_state, hosted_verify_state, vision_state, terminal_verify_state, settings_status])
         test_button.click(test_connections, [], settings_status)
-        save_button.click(save_settings, [profile_select, hosted_enabled, hosted_url, vision_toggle, vision_url, spark_enabled, spark_url, spark_model, cloud_enabled, provider, reasoning_model, attempts, *secret_inputs], settings_status)
+        save_button.click(save_settings, [profile_select, hosted_enabled, hosted_url, vision_toggle, vision_url, spark_enabled, spark_url, spark_model, cloud_enabled, provider, openai_base_url, reasoning_model, attempts, *secret_inputs], settings_status)
     return demo
 
 

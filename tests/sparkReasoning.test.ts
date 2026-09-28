@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createJourneyRuntime } from "../src/app/runtime.js";
 import { loadRuntimeCognitionConfig } from "../src/app/cognitionConfig.js";
 import { OpenAICompatibleReasoningController } from "../src/journey/spark.js";
@@ -20,10 +20,9 @@ describe("generic OpenAI-compatible cloud endpoint", () => {
 });
 
 describe("runtime OpenAI-compatible cloud selection", () => {
-  it("routes cloud reasoning to the compatible URL with the Space OPENAI_API_KEY", async () => {
-    const calls: Array<{ url: string; authorization: string | null }> = [];
-    vi.stubGlobal("fetch", async (url: string | URL | Request, init?: RequestInit) => { calls.push({ url: String(url), authorization: new Headers(init?.headers).get("authorization") }); return new Response(JSON.stringify({ choices: [{ message: { content: '{"goal":"Open pricing","success_criteria":[]}' } }] }), { status: 200 }); });
-    try { const config = loadRuntimeCognitionConfig({ env: { SPACE_ID: "test/journeytest", CLOUD_REASONING_ENABLED: "true", REASONING_PROVIDER: "openai", REASONING_MODEL: "custom-model", OPENAI_COMPATIBLE_URL: "https://inference.example/v1", OPENAI_API_KEY: "space-secret" } }); const runtime = createJourneyRuntime({ config }); const initialized = await runtime.cognitionRouter.initializeJourney({ goal: "Open pricing", successCriteria: [], context: {}, signal: new AbortController().signal }); expect(initialized.metadata.provider).toBe("openai-compatible"); expect(calls[0]).toEqual({ url: "https://inference.example/v1/chat/completions", authorization: "Bearer space-secret" }); }
-    finally { vi.unstubAllGlobals(); }
+  it("constructs a custom Pi model for an arbitrary endpoint model", () => {
+    const config = loadRuntimeCognitionConfig({ env: { SPACE_ID: "test/journeytest", CLOUD_REASONING_ENABLED: "true", REASONING_PROVIDER: "openai", OPENAI_BASE_URL: "https://inference.example/v1", OPENAI_MODEL: "custom-model-not-in-registry", OPENAI_API_KEY: "space-secret" } });
+    const runtime = createJourneyRuntime({ config });
+    expect(runtime.config.cloud).toMatchObject({ transport: "openai-compatible", model: "custom-model-not-in-registry" });
   });
 });

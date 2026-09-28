@@ -83,18 +83,17 @@ journeytest ui
 
 For Hugging Face, configure non-secret flags/endpoints/models as Space Variables and `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `LAYA_HOSTED_API_KEY`, `LAYA_VISION_API_KEY`, and `SPARK_OPENAI_API_KEY` as Space Secrets. The Settings panel is session-scoped on Space and never writes `.env.local`. Use `journeytest info --json` for a secret-free configuration summary, or override one run with `--cognition-profile local-cloud`.
 
-Set `OPENAI_COMPATIBLE_URL` to route cloud System-2 requests through an OpenAI-compatible `chat/completions` endpoint; it uses `OPENAI_API_KEY` from local environment or Hugging Face Space Secrets. Configure only the cloud key selected by `REASONING_PROVIDER`. Hosted Laya,
+Set `OPENAI_BASE_URL` to select Pi’s OpenAI-compatible Chat Completions transport. In this mode `OPENAI_MODEL` is the endpoint model ID and `OPENAI_API_KEY` comes from the local environment or Hugging Face Space Secrets. Configure only the cloud key selected by `REASONING_PROVIDER`. Hosted Laya,
 Vision, and Spark keys are optional unless their matching `*_AUTH_REQUIRED`
 flag is enabled. `HF_TOKEN` is recommended for authenticated Hugging Face model
 downloads but is only required for private or gated resources; public models
 continue without it.
 
 Pi-backed cloud reasoning validates `REASONING_PROVIDER` and
-`REASONING_MODEL` against the model registry in the installed `pi-ai` package.
-Use provider ids `openai`, `anthropic`, or `google` for the corresponding cloud
-services. `OPENAI_MODEL` and generic `OPENAI_BASE_URL` are not JourneyTest
-reasoning configuration; use canonical `REASONING_MODEL`, or the explicit
-`OPENAI_COMPATIBLE_URL` when selecting a compatible endpoint.
+`REASONING_MODEL` against the model registry in the installed `pi-ai` package
+when `OPENAI_BASE_URL` is absent. With `OPENAI_BASE_URL`, JourneyTest instead
+constructs an internal `journeytest-openai-compatible` Pi model using
+`OPENAI_MODEL`; arbitrary endpoint model IDs do not require registry entries.
 
 ## Documentation
 

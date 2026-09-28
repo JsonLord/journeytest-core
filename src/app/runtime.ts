@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import { AgentBrowserDriver } from "../drivers/agent-browser/index.js";
+import { createOpenAICompatibleModel } from "../directors/pi/modelResolution.js";
 import { DefaultCognitionRouter, JourneyRunner, JourneyService, LayaAgent, OpenAICompatibleReasoningController, PiReasoningController, RetryingReasoningController, SystemOneRemoteBackend } from "../journey/index.js";
 import { assertCloudReasoningConfiguration, loadRuntimeCognitionConfig, RuntimeCognitionConfigSchema, type RuntimeCognitionConfig, type RuntimeCognitionOverrides } from "./cognitionConfig.js";
 import { nonnegativeEnv, positiveEnv } from "./config.js";
@@ -29,7 +30,8 @@ function createCognitionComponents(config: RuntimeCognitionConfig, endpoint: str
   const visionAgent = visionBackend ? new LayaAgent({ backend: visionBackend, model: config.localLaya.model }) : undefined;
   const sparkBase = config.spark.enabled && config.spark.baseUrl ? new OpenAICompatibleReasoningController({ baseUrl: config.spark.baseUrl, apiKey: config.spark.apiKey, model: config.spark.model, timeoutMs: config.spark.timeoutMs }) : undefined;
   const spark = sparkBase ? new RetryingReasoningController(sparkBase, { backend: "spark", maxAttempts: config.spark.maxAttempts, timeoutMs: config.spark.timeoutMs, retryBaseMs: 100 }) : undefined;
-  const cloudBase = config.cloud.enabled ? (config.cloud.openAiCompatibleUrl ? new OpenAICompatibleReasoningController({ baseUrl: config.cloud.openAiCompatibleUrl, apiKey: config.credentials.openai, model: config.cloud.model!, provider: "openai-compatible", timeoutMs: config.cloud.timeoutMs }) : new PiReasoningController({ provider: config.cloud.provider as never, modelId: config.cloud.model!, thinkingLevel: config.cloud.thinkingLevel, getApiKey: provider => apiKeyFor(provider, config) })) : undefined;
+  const cloudModel = config.cloud.enabled && config.cloud.transport === "openai-compatible" ? createOpenAICompatibleModel({ baseUrl: config.cloud.openAiCompatibleUrl!, modelId: config.cloud.model!, contextWindow: config.cloud.contextWindow, maxTokens: config.cloud.maxTokens, supportsDeveloperRole: config.cloud.supportsDeveloperRole, supportsReasoningEffort: config.cloud.supportsReasoningEffort }) : undefined;
+  const cloudBase = config.cloud.enabled ? new PiReasoningController({ ...(cloudModel ? { model: cloudModel } : { provider: config.cloud.provider as never, modelId: config.cloud.model! }), thinkingLevel: config.cloud.thinkingLevel, getApiKey: provider => provider === "journeytest-openai-compatible" ? config.credentials.openai : apiKeyFor(provider, config) }) : undefined;
   const cloud = cloudBase ? new RetryingReasoningController(cloudBase, { backend: "cloud", maxAttempts: config.cloud.maxAttempts, timeoutMs: config.cloud.timeoutMs, retryBaseMs: config.cloud.retryBaseMs }) : undefined;
   return { backend, hostedBackend, visionBackend, localAgent, reasoningAvailable: Boolean(spark || cloud), router: new DefaultCognitionRouter({ config, localLaya: localAgent, hostedLaya: hostedAgent, vision: visionAgent, spark, cloud }) };
 }
