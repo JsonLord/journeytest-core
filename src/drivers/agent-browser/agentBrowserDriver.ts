@@ -272,6 +272,15 @@ export class AgentBrowserDriver implements BrowserDriver {
     }
   }
 
+  async startTrace(path: string): Promise<BrowserCommandResult> {
+    return this.run(["trace", "start", path], `Started browser trace at ${path}`);
+  }
+
+  async stopTrace(path: string): Promise<BrowserCommandResult<{ path: string }>> {
+    const result = await this.run(["trace", "stop", path], `Stopped browser trace at ${path}`);
+    return { ...result, details: { path } };
+  }
+
   async open(url: string): Promise<BrowserCommandResult> {
     const options = this.assertStarted();
     assertUrlAllowed(url, options.allowedOrigins);
@@ -379,6 +388,10 @@ export class AgentBrowserDriver implements BrowserDriver {
 
   async type(target: string, value: string): Promise<BrowserCommandResult> {
     return this.run(["type", target, value], `Typed into ${target}`);
+  }
+
+  async select(target: string, value: string): Promise<BrowserCommandResult> {
+    return this.run(["select", target, value], `Selected ${value} in ${target}`);
   }
 
   async press(key: string): Promise<BrowserCommandResult> {

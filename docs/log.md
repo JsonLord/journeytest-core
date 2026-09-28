@@ -1,5 +1,31 @@
 # Documentation Log
 
+## 2026-09-28
+
+- Tightened requested-trace semantics so a failed trace finalization produces a
+  structured `trace_error` instead of a completed result without its artifact.
+- Expanded OpenAPI request/response schemas, made doctor model smoke perform a
+  real inference, and pinned Space Python dependencies with CPU-only PyTorch.
+
+## 2026-09-27
+
+- Audited the JourneyTest and `laya-browser-agent` architectures and recorded
+  the exact upstream revision, license, selective reuse plan, and exclusions.
+- Documented the shared JourneyService, JourneyAgent boundary, JourneyResult v1,
+  evidence and confidence safety rules, and the implementation plan for Gates
+  A through F.
+- Added the remote SystemOne backend, Laya agent, goal-aware scoping,
+  coarse-to-fine diagnostics, enriched observations, deterministic value
+  provider boundary, and safe SELECT execution.
+- Recorded a real CPU `ichenney/laya-browser-v32b` JourneyTest browser run and a
+  small same-fixture comparison with `cklxx/laya-browser` `v17s`.
+- Added thin CLI, asynchronous HTTP API, Gradio/FastAPI composition, bounded
+  JourneyService concurrency, managed localdecide lifecycle, URL and artifact
+  security, doctor/info commands, and a Hugging Face Docker Space path.
+- Hardened deployment metadata and diagnostics, added real agent-browser CDP
+  trace artifacts, a stable public OpenAPI contract, official API examples,
+  redirect/DNS SSRF regression coverage, and container health configuration.
+
 ## 2026-06-29
 
 - Initialized the OKF documentation bundle under `docs/`.

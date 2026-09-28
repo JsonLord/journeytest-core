@@ -39,6 +39,17 @@ export interface SnapshotOptions {
   savePath?: string;
 }
 
+export interface InteractiveSnapshotElement {
+  ref: string;
+  role: string;
+  name: string;
+  enabled?: boolean;
+  value?: string;
+  selected?: boolean;
+  options?: Array<{ label: string; value: string }>;
+  operations?: Array<"CLICK" | "TYPE_TEXT" | "SELECT">;
+}
+
 export interface ScreenshotOptions {
   path: string;
   full?: boolean;
@@ -131,10 +142,12 @@ export interface BrowserDriver {
   start(options: BrowserStartOptions): Promise<void>;
   startRecording(path: string): Promise<BrowserCommandResult>;
   stopRecording(): Promise<BrowserCommandResult>;
+  startTrace?(path: string): Promise<BrowserCommandResult>;
+  stopTrace?(path: string): Promise<BrowserCommandResult<{ path: string }>>;
   open(url: string): Promise<BrowserCommandResult>;
   snapshot(
     options?: SnapshotOptions,
-  ): Promise<BrowserCommandResult<{ path?: string }>>;
+  ): Promise<BrowserCommandResult<{ path?: string; elements?: InteractiveSnapshotElement[] }>>;
   scrollIntoView(target: string): Promise<BrowserCommandResult>;
   scroll(options: ScrollOptions): Promise<BrowserCommandResult>;
   hover(target: string): Promise<BrowserCommandResult>;
@@ -146,6 +159,7 @@ export interface BrowserDriver {
   click(target: string): Promise<BrowserCommandResult>;
   fill(target: string, value: string): Promise<BrowserCommandResult>;
   type(target: string, value: string): Promise<BrowserCommandResult>;
+  select?(target: string, value: string): Promise<BrowserCommandResult>;
   press(key: string): Promise<BrowserCommandResult>;
   wait(options: WaitOptions): Promise<BrowserCommandResult>;
   screenshot(

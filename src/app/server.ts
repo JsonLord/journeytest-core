@@ -1,0 +1,70 @@
+import { createReadStream } from "node:fs";
+import { access } from "node:fs/promises";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { basename, resolve } from "node:path";
+import type { JourneyService } from "../journey/index.js";
+import type { LayaBackend } from "../journey/laya.js";
+import { assertSafeJourneyNetwork, assertSafeRedirectChain } from "./security.js";
+
+export interface ApiServerOptions { service: JourneyService; backend: LayaBackend; host?: string; port?: number; model?: string }
+export function createApiServer(options: ApiServerOptions) {
+  return createServer(async (request, response) => {
+    try { await route(request, response, options); }
+    catch (error) { json(response, statusFor(error), { error: safeError(error) }); }
+  });
+}
+async function route(request: IncomingMessage, response: ServerResponse, options: ApiServerOptions) {
+  const url = new URL(request.url ?? "/", "http://localhost"); const path = url.pathname; const method = request.method ?? "GET";
+  if (method === "GET" && path === "/api/v1/health") return json(response, 200, { ok: true });
+  if (method === "GET" && path === "/api/v1/ready") { const health = await options.backend.health(); return json(response, health.ok ? 200 : 503, { ready: health.ok, laya: health }); }
+  if (method === "GET" && path === "/api/v1/info") { const health = await options.backend.health(); return json(response, 200, { name: "JourneyTest", schema_version: "1", model: options.model, laya: health }); }
+  if (method === "GET" && path === "/api/v1/openapi.json") return json(response, 200, openApiSchema());
+  if (method === "GET" && path === "/docs") { response.writeHead(200, { "content-type": "text/html; charset=utf-8" }); return response.end(apiDocs()); }
+  if (method === "GET" && path === "/") { response.writeHead(200, { "content-type": "text/html; charset=utf-8" }); return response.end(developerUi()); }
+  if (method === "POST" && path === "/api/v1/journeys") {
+    const body = await readJson(request); const domains = Array.isArray(body.allowedDomains) ? body.allowedDomains.map(String) : []; await assertSafeJourneyNetwork(String(body.url), domains); await assertSafeRedirectChain(String(body.url), domains);
+    const id = await options.service.createJourney({ url: body.url, goal: body.goal, context: body.context ?? {}, maxSteps: body.maxSteps, timeoutMs: body.timeoutMs, screenshots: body.screenshots, trace: body.trace, confidenceThreshold: body.confidenceThreshold });
+    void options.service.runJourney(id).catch(() => undefined); return json(response, 202, { journey_id: id, status: "created" });
+  }
+  const match = path.match(/^\/api\/v1\/journeys\/([^/]+)(?:\/(result|events|cancel|artifacts\/([^/]+)))?$/);
+  if (match) {
+    const id = decodeURIComponent(match[1]); const action = match[2];
+    if (!action && method === "GET") return json(response, 200, await options.service.getJourney(id));
+    if (action === "result" && method === "GET") { const result = await options.service.getResult(id); return result ? json(response, 200, result) : json(response, 202, { status: (await options.service.getJourney(id)).status }); }
+    if (action === "events" && method === "GET") return json(response, 200, await options.service.getEvents(id));
+    if (action === "cancel" && method === "POST") { await options.service.cancelJourney(id); return json(response, 202, { journey_id: id, status: "cancelling" }); }
+    if (action?.startsWith("artifacts/") && method === "GET") return artifact(response, await options.service.getResult(id), match[3]);
+  }
+  json(response, 404, { error: "Not found" });
+}
+async function artifact(response: ServerResponse, result: Awaited<ReturnType<JourneyService["getResult"]>>, artifactId: string | undefined) {
+  if (!result || !artifactId) return json(response, 404, { error: "Artifact not found" });
+  const known = new Map<string, string>(); if (result.artifacts.result) known.set("result", result.artifacts.result); if (result.artifacts.trace) known.set("trace", result.artifacts.trace); result.artifacts.screenshots.forEach((path, index) => known.set(`screenshot-${index + 1}`, path));
+  const path = known.get(artifactId); if (!path) return json(response, 404, { error: "Artifact not found" }); await access(resolve(path));
+  response.writeHead(200, { "content-type": path.endsWith(".png") ? "image/png" : "application/json", "content-disposition": `attachment; filename=${JSON.stringify(basename(path))}` }); createReadStream(path).pipe(response);
+}
+async function readJson(request: IncomingMessage): Promise<Record<string, unknown>> { const chunks: Buffer[] = []; let size = 0; for await (const chunk of request) { size += chunk.length; if (size > 1_000_000) throw new SyntaxError("Request too large"); chunks.push(chunk); } return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}"); }
+function json(response: ServerResponse, status: number, body: unknown) { response.writeHead(status, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }); response.end(`${JSON.stringify(body)}\n`); }
+function safeError(error: unknown) { const message = error instanceof Error ? error.message : String(error); return message.replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]").slice(0, 500); }
+function statusFor(error: unknown) { const message = safeError(error); if (message.startsWith("Unknown journey")) return 404; if (error instanceof SyntaxError || error instanceof TypeError || error instanceof URIError || /not allowed|blocked network|redirect|Invalid|must be|expected|too large/i.test(message)) return 400; return 500; }
+function apiDocs() { return "<!doctype html><title>JourneyTest API</title><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css><div id=swagger-ui></div><script src=https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js></script><script>SwaggerUIBundle({url:'/api/v1/openapi.json',dom_id:'#swagger-ui'})</script>"; }
+export function openApiSchema() {
+  const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
+  const jsonResponse = (description: string, schema: unknown) => ({ description, content: { "application/json": { schema } } });
+  const errorResponse = jsonResponse("Error", ref("Error"));
+  const id = { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } };
+  const journeyRequest = { type: "object", additionalProperties: false, required: ["url", "goal"], properties: { url: { type: "string", format: "uri" }, goal: { type: "string", minLength: 1 }, context: { type: "object", additionalProperties: true }, maxSteps: { type: "integer", minimum: 1, maximum: 100, default: 15 }, timeoutMs: { type: "integer", minimum: 1, default: 120000 }, screenshots: { type: "boolean", default: true }, trace: { type: "boolean", default: false }, confidenceThreshold: { type: "number", minimum: 0, maximum: 1, default: 0.15 }, allowedDomains: { type: "array", items: { type: "string" } } } };
+  const result = { type: "object", required: ["schema_version", "journey_id", "status", "goal", "start_url", "final_url", "duration_ms", "step_count", "termination", "steps", "events", "artifacts", "metrics", "context", "agent"], properties: { schema_version: { const: "1" }, journey_id: { type: "string" }, status: { enum: ["completed", "blocked", "error", "cancelled"] }, goal: { type: "string" }, start_url: { type: "string", format: "uri" }, final_url: { type: "string", format: "uri" }, duration_ms: { type: "integer", minimum: 0 }, step_count: { type: "integer", minimum: 0 }, termination: { type: "object", required: ["reason"], properties: { reason: { type: "string" }, message: { type: "string" } } }, steps: { type: "array", items: { type: "object", additionalProperties: true } }, events: { type: "array", items: ref("Event") }, artifacts: { type: "object", required: ["screenshots"], properties: { result: { type: "string" }, screenshots: { type: "array", items: { type: "string" } }, trace: { type: "string" } } }, metrics: { type: "object", additionalProperties: { type: "number" } }, context: { type: "object", additionalProperties: true }, agent: { type: "object", required: ["type", "backend"], properties: { type: { type: "string" }, backend: { type: "string" }, model: { type: "string" }, revision: { type: "string" } } } } };
+  return { openapi: "3.1.0", info: { title: "JourneyTest API", version: "1.0.0", description: "Asynchronous JourneyTest service. All execution uses the shared JourneyService." }, paths: {
+    "/api/v1/health": { get: { summary: "Service health", responses: { "200": jsonResponse("Healthy", ref("Health")) } } },
+    "/api/v1/ready": { get: { summary: "Laya readiness", responses: { "200": jsonResponse("Ready", ref("Ready")), "503": jsonResponse("Not ready", ref("Ready")) } } },
+    "/api/v1/info": { get: { summary: "Runtime information", responses: { "200": jsonResponse("Runtime information", ref("Info")) } } },
+    "/api/v1/journeys": { post: { summary: "Create an asynchronous journey", requestBody: { required: true, content: { "application/json": { schema: journeyRequest } } }, responses: { "202": jsonResponse("Journey accepted", ref("JourneyAccepted")), "400": errorResponse } } },
+    "/api/v1/journeys/{id}": { get: { summary: "Get journey status", parameters: [id], responses: { "200": jsonResponse("Journey status", ref("JourneyStatus")), "404": errorResponse } } },
+    "/api/v1/journeys/{id}/result": { get: { summary: "Get JourneyResult v1", parameters: [id], responses: { "200": jsonResponse("Completed JourneyResult", ref("JourneyResult")), "202": jsonResponse("Journey pending", ref("Pending")), "404": errorResponse } } },
+    "/api/v1/journeys/{id}/events": { get: { summary: "Get journey events", parameters: [id], responses: { "200": jsonResponse("Events", { type: "array", items: ref("Event") }), "404": errorResponse } } },
+    "/api/v1/journeys/{id}/cancel": { post: { summary: "Cancel a journey", parameters: [id], responses: { "202": jsonResponse("Cancellation requested", ref("JourneyAccepted")), "404": errorResponse } } },
+    "/api/v1/journeys/{id}/artifacts/{artifact_id}": { get: { summary: "Download a known journey artifact", parameters: [id, { name: "artifact_id", in: "path", required: true, description: "result, trace, or screenshot-N", schema: { type: "string" } }], responses: { "200": { description: "Artifact bytes", content: { "application/json": { schema: { type: "string", format: "binary" } }, "image/png": { schema: { type: "string", format: "binary" } } } }, "404": errorResponse } } },
+  }, components: { schemas: { Health: { type: "object", required: ["ok"], properties: { ok: { type: "boolean" } } }, Ready: { type: "object", required: ["ready", "laya"], properties: { ready: { type: "boolean" }, laya: { type: "object", additionalProperties: true } } }, Info: { type: "object", required: ["name", "schema_version", "laya"], properties: { name: { type: "string" }, schema_version: { const: "1" }, model: { type: "string" }, laya: { type: "object", additionalProperties: true } } }, JourneyAccepted: { type: "object", required: ["journey_id", "status"], properties: { journey_id: { type: "string" }, status: { type: "string" } } }, JourneyStatus: { type: "object", required: ["id", "request", "status"], properties: { id: { type: "string" }, request: journeyRequest, status: { enum: ["created", "running", "completed", "failed"] } } }, Pending: { type: "object", required: ["status"], properties: { status: { type: "string" } } }, Event: { type: "object", required: ["type", "timestamp"], properties: { type: { type: "string" }, timestamp: { type: "string", format: "date-time" }, data: {} } }, JourneyResult: result, Error: { type: "object", required: ["error"], properties: { error: { type: "string" } } } } } };
+}
+function developerUi() { return `<!doctype html><html><head><meta charset=utf-8><title>JourneyTest</title><style>body{font:16px system-ui;max-width:900px;margin:2rem auto;padding:0 1rem}input,textarea,button{display:block;width:100%;margin:.5rem 0;padding:.7rem;box-sizing:border-box}pre{background:#111;color:#eee;padding:1rem;overflow:auto}</style></head><body><h1>JourneyTest Developer UI</h1><form id=f><label>Start URL<input id=url type=url required></label><label>Goal<textarea id=goal required></textarea></label><label>Max steps<input id=steps type=number value=15></label><label>Timeout ms<input id=timeout type=number value=120000></label><label><input id=shots type=checkbox checked> Capture screenshots</label><button>Run journey</button></form><h2>Result</h2><pre id=out>Idle</pre><h2>Developer/API</h2><p><a href=/api/v1/health>Health</a> · <a href=/api/v1/ready>Readiness</a> · <a href=/docs>API docs</a></p><script>f.onsubmit=async e=>{e.preventDefault();out.textContent='Submitting…';const r=await fetch('/api/v1/journeys',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:url.value,goal:goal.value,maxSteps:+steps.value,timeoutMs:+timeout.value,screenshots:shots.checked})});const j=await r.json();if(!r.ok){out.textContent=JSON.stringify(j,null,2);return}for(;;){const x=await fetch('/api/v1/journeys/'+j.journey_id+'/result'),b=await x.json();out.textContent=JSON.stringify(b,null,2);if(x.status===200)break;await new Promise(q=>setTimeout(q,750))}}</script></body></html>`; }
