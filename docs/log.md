@@ -2,6 +2,13 @@
 
 ## 2026-09-28
 
+- Reconciled the contradictory PR 8 live campaign, classified edge, runtime,
+  expected-negative, and harness evidence, and documented remaining HF-only
+  uncertainty.
+- Hardened service admission, FIFO slot handoff, cancellation observability,
+  structured API errors, artifact metadata, proxy failure mapping, and the
+  deployment harness's metrics and evidence consistency.
+
 - Corrected Pi cloud transport selection so `OPENAI_BASE_URL` and
   `OPENAI_MODEL` construct an internal OpenAI Chat Completions model without a
   bundled-registry lookup, while preserving registry mode when the URL is absent.

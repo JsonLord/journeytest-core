@@ -1,0 +1,8 @@
+{
+  "url": "https://example.com",
+  "goal": "Verify Example Domain text on page",
+  "maxSteps": 5,
+  "timeoutMs": 60000,
+  "screenshots": true,
+  "trace": true
+}

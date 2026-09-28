@@ -1,0 +1,16 @@
+{
+  "id": "e87a39b6-7b13-4e4c-bdbb-c9e1c677e74e",
+  "request": {
+    "url": "https://example.com",
+    "goal": "Concurrent test goal 1",
+    "context": {},
+    "maxSteps": 2,
+    "timeoutMs": 120000,
+    "screenshots": true,
+    "trace": false,
+    "confidenceThreshold": 0.15,
+    "successCriteria": []
+  },
+  "status": "completed",
+  "started_at": "2026-09-28T22:53:39.186Z"
+}

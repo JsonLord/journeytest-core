@@ -1,0 +1,52 @@
+{
+  "status": "pass",
+  "deployment": {
+    "url": "http://127.0.0.1:7861",
+    "timestamp": "1790635986",
+    "commit": "local-working-tree",
+    "cognition_profile": "local-cloud",
+    "reasoning_transport": "openai-compatible",
+    "reasoning_model": "alias-fast",
+    "laya_mode": "auto"
+  },
+  "tests": {
+    "total": 34,
+    "passed": 34,
+    "failed": 0,
+    "warnings": 0,
+    "skipped": 0
+  },
+  "journeys": {
+    "submitted": 21,
+    "accepted": 21,
+    "terminal": 21,
+    "completed": 19,
+    "failed": 1,
+    "cancelled": 1
+  },
+  "cognition": {
+    "laya_live_verified": false,
+    "alias_fast_live_verified": false,
+    "laya_system2_loop_verified": false,
+    "local_campaign_components": {
+      "journey_service": "real",
+      "api_server": "real",
+      "browser_driver": "stubbed",
+      "system1": "stubbed",
+      "system2": "unavailable"
+    }
+  },
+  "performance": {
+    "health_rtt_p50_ms": 15.27,
+    "status_rtt_p50_ms": 1.43,
+    "events_rtt_p50_ms": 1.01,
+    "journey_duration_p50_s": 2.0
+  },
+  "security": {
+    "secret_leak_found": false,
+    "ssrf_protection_verified": true,
+    "path_traversal_blocked": true
+  },
+  "failures": [],
+  "maturity": "production beta"
+}

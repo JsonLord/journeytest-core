@@ -69,6 +69,15 @@ Public submissions reject local, loopback, private, link-local, metadata, and
 non-HTTP URLs. Set `JOURNEYTEST_ALLOW_PRIVATE_NETWORKS=1` only for controlled
 local fixture testing.
 
+Service execution is admission-controlled. By default one journey executes and
+up to ten wait in FIFO order; configure `MAX_CONCURRENT_JOURNEYS` and
+`MAX_QUEUED_JOURNEYS` to change those bounds. A full queue returns structured
+HTTP 429 `CAPACITY_EXCEEDED` rather than accepting work that cannot run. The
+default of one active journey reflects the shared agent-browser process model;
+increase it only after validating the target deployment's browser isolation.
+Journey status includes queue and cancellation timestamps, and controlled API
+errors use `{ "error": { "code", "message", "retryable" } }`.
+
 ## Cognition profiles and settings
 
 JourneyTest routes cognition through four profiles: `local-cloud`, `local-spark-cloud`, `dual-laya-cloud`, and `dual-laya-spark-cloud`. Local Laya is always the normal System-1 path; hosted Laya and Vision are conditional, Spark is optional local System 2, and Pi cloud reasoning is the validated escalation authority.

@@ -1,0 +1,16 @@
+{
+  "id": "af1adbd4-27ec-437d-acf8-5905fbec4d78",
+  "request": {
+    "url": "https://example.com",
+    "goal": "Navigate endlessly",
+    "context": {},
+    "maxSteps": 10,
+    "timeoutMs": 2000,
+    "screenshots": true,
+    "trace": false,
+    "confidenceThreshold": 0.15,
+    "successCriteria": []
+  },
+  "status": "failed",
+  "started_at": "2026-09-28T22:53:10.359Z"
+}

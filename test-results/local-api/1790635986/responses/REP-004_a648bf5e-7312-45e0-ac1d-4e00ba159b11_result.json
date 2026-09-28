@@ -1,0 +1,75 @@
+{
+  "schema_version": "1",
+  "journey_id": "a648bf5e-7312-45e0-ac1d-4e00ba159b11",
+  "status": "completed",
+  "goal": "Verify Example Domain text",
+  "start_url": "https://example.com",
+  "final_url": "https://example.com",
+  "duration_ms": 2,
+  "step_count": 1,
+  "termination": {
+    "reason": "done"
+  },
+  "reasoning": {
+    "state": {
+      "goal": "Verify Example Domain text",
+      "success_criteria": []
+    },
+    "last_assessment": {
+      "decision": "DONE",
+      "goal_satisfied": true,
+      "blocked": false,
+      "progress": "complete",
+      "reason_code": "reasoning_disabled",
+      "confidence": 1
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "timestamp": "2026-09-28T22:53:22.993Z",
+      "url": "https://example.com",
+      "candidates": [
+        {
+          "index": 0,
+          "ref": "more",
+          "role": "link",
+          "name": "More information",
+          "operations": [
+            "CLICK"
+          ]
+        }
+      ],
+      "decision": {
+        "operation": "DONE",
+        "confidence": 1
+      },
+      "validation": "OK",
+      "timings": {
+        "observationMs": 0,
+        "inferenceMs": 0,
+        "actionMs": 0,
+        "stepMs": 0
+      }
+    }
+  ],
+  "events": [],
+  "artifacts": {
+    "result": "test-results/local-api/runtime-runs/a648bf5e-7312-45e0-ac1d-4e00ba159b11/journey-result.json",
+    "screenshots": []
+  },
+  "metrics": {
+    "journey_ms": 2,
+    "laya_calls": 1,
+    "laya_total_ms": 0,
+    "reasoning_calls": 0,
+    "reasoning_total_ms": 0,
+    "reasoning_tokens": 0,
+    "reasoning_cost": 0
+  },
+  "context": {},
+  "agent": {
+    "type": "local-campaign-fixture",
+    "backend": "deterministic-stub"
+  }
+}

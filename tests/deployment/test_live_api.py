@@ -13,8 +13,7 @@ import urllib.error
 import urllib.parse
 import hashlib
 import concurrent.futures
-from PIL import Image
-import io
+import struct
 
 BASE_URL = os.environ.get("LIVE_API_BASE_URL", "https://leon4gr45-nova-right-nav.hf.space")
 SECRET_KEYS = ["OPENAI_API_KEY", "HF_TOKEN", "authorization", "cookie"]
@@ -40,7 +39,8 @@ class LiveApiTester:
     def __init__(self, output_dir=None):
         if not output_dir:
             ts = str(int(time.time()))
-            output_dir = os.path.join("test-results/live-api", ts)
+            campaign = "local-api" if "127.0.0.1" in BASE_URL or "localhost" in BASE_URL else "live-api"
+            output_dir = os.path.join("test-results", campaign, ts)
 
         self.output_dir = output_dir
         self.base_url = BASE_URL
@@ -50,10 +50,21 @@ class LiveApiTester:
             "http_request_total": 0,
             "http_failures": 0,
             "journeys_submitted": 0,
+            "journeys_accepted": 0,
+            "journeys_terminal": 0,
+            "task_successes": 0,
             "journeys_completed": 0,
             "journeys_failed": 0,
             "journeys_cancelled": 0,
             "success_rate": 0.0,
+            "journey_creation_success_rate": 0.0,
+            "journey_execution_success_rate": 0.0,
+            "task_success_rate": 0.0,
+            "infrastructure_request_success_rate": 0.0,
+            "application_failures": 0,
+            "infrastructure_failures": 0,
+            "expected_negative_responses": 0,
+            "test_harness_failures": 0,
             "journey_duration_p50": 0.0,
             "journey_duration_p95": 0.0,
             "health_rtt_p50": 0.0,
@@ -76,6 +87,7 @@ class LiveApiTester:
         self.status_rtts = []
         self.events_rtts = []
         self.journey_durations = []
+        self.transport_attempts = 0
 
         subdirs = ['metadata', 'requests', 'responses', 'journeys', 'events', 'artifacts', 'performance', 'security', 'logs', 'summary']
         for sd in subdirs:
@@ -103,6 +115,7 @@ class LiveApiTester:
                 data = body
 
         for attempt in range(max_retries):
+            self.transport_attempts += 1
             req = urllib.request.Request(url, data=data, headers=req_headers, method=method)
             start = time.time()
             try:
@@ -140,7 +153,7 @@ class LiveApiTester:
                     time.sleep(2 * (attempt + 1))
                     continue
                 self.metrics["http_failures"] += 1
-                return 500, {"error": str(e)}, "application/json", duration
+                return 0, {"transport_error": str(e)}, "", duration
 
     def save_evidence(self, subdir, filename, content):
         path = os.path.join(self.output_dir, subdir, filename)
@@ -181,6 +194,17 @@ class LiveApiTester:
             "suspected_component": component or "unknown"
         }
         self.failures.append(failure)
+
+    def classify_failure(self, status, body, content_type):
+        text = body if isinstance(body, str) else json.dumps(body)
+        if content_type.startswith("text/html") and "Hugging Face" in text and status in [500, 502, 503, 504]:
+            self.metrics["infrastructure_failures"] += 1
+            return "external_infrastructure_failure"
+        if status == 0 or "transport_error" in text:
+            self.metrics["infrastructure_failures"] += 1
+            return "external_infrastructure_failure"
+        self.metrics["application_failures"] += 1
+        return "application_failure"
 
     def poll_journey(self, journey_id, max_wait=90):
         start = time.time()
@@ -225,17 +249,19 @@ class LiveApiTester:
 
     def run_journey_test(self, test_id, name, payload, expected_status="completed"):
         self.metrics["journeys_submitted"] += 1
-        s_code, create_res, _, dur = self.make_request("POST", "/api/v1/journeys", body=payload)
+        s_code, create_res, create_type, dur = self.make_request("POST", "/api/v1/journeys", body=payload)
         req_ev = self.save_evidence("requests", f"{test_id}_create_req.json", payload)
-        res_ev = self.save_evidence("responses", f"{test_id}_create_res.json", create_res)
+        res_ev = self.save_evidence("responses", f"{test_id}_create_res.json", {"status": s_code, "content_type": create_type, "body": create_res})
 
         if s_code not in [200, 201, 202] or not isinstance(create_res, dict) or "journey_id" not in create_res:
             self.metrics["journeys_failed"] += 1
+            failure_class = self.classify_failure(s_code, create_res, create_type)
             self.record_test(test_id, name, "journey", "fail", dur, [req_ev, res_ev], f"Creation failed with status {s_code}")
-            self.record_failure(f"BUG-{test_id}", "P1", test_id, f"Journey creation failed: {name}", "HTTP 200/201/202 with journey_id", f"HTTP {s_code}", ["POST /api/v1/journeys"], [req_ev, res_ev], "journey_service")
+            self.record_failure(f"BUG-{test_id}", "P1", test_id, f"Journey creation failed: {name}", "HTTP 202 with journey_id", f"HTTP {s_code} ({failure_class})", ["POST /api/v1/journeys"], [req_ev, res_ev], "hf_edge" if failure_class.startswith("external") else "journey_service")
             return None, None
 
         jid = create_res["journey_id"]
+        self.metrics["journeys_accepted"] += 1
         status_res, j_dur = self.poll_journey(jid)
         self.journey_durations.append(j_dur)
 
@@ -258,8 +284,14 @@ class LiveApiTester:
         final_status = status_res.get("status") if isinstance(status_res, dict) else "unknown"
         if final_status == "completed":
             self.metrics["journeys_completed"] += 1
+            self.metrics["journeys_terminal"] += 1
+            if isinstance(result_res, dict) and result_res.get("status") == "completed": self.metrics["task_successes"] += 1
         elif final_status == "cancelled":
             self.metrics["journeys_cancelled"] += 1
+            self.metrics["journeys_terminal"] += 1
+        elif final_status == "failed":
+            self.metrics["journeys_failed"] += 1
+            self.metrics["journeys_terminal"] += 1
         else:
             self.metrics["journeys_failed"] += 1
 
@@ -290,14 +322,30 @@ class LiveApiTester:
             if scode == 200 and len(content) > 0:
                 self.metrics["artifact_downloads_success"] += 1
                 try:
-                    img = Image.open(io.BytesIO(content))
-                    img.verify()
+                    if ctype.startswith("image/png") and content.startswith(b"\x89PNG\r\n\x1a\n"):
+                        width, height = struct.unpack(">II", content[16:24])
+                    elif ctype.startswith("image/jpeg") and content.startswith(b"\xff\xd8"):
+                        width, height = jpeg_dimensions(content)
+                    else: raise ValueError("unsupported image type or magic bytes")
+                    if width <= 0 or height <= 0: raise ValueError("invalid image dimensions")
                     self.metrics["screenshot_validation_success"] += 1
                     self.save_evidence(f"artifacts/{jid}/screenshots", "001.png", content)
+                    self.save_evidence("artifacts", f"{jid}_screenshot-1.json", {"sha256": hashlib.sha256(content).hexdigest(), "size": len(content), "content_type": ctype, "width": width, "height": height})
                 except Exception:
                     self.metrics["screenshot_validation_failure"] += 1
             else:
                 self.metrics["artifact_downloads_failure"] += 1
+            trace_id = result.get("artifacts", {}).get("trace") if isinstance(result, dict) else None
+            if trace_id:
+                tcode, trace_content, trace_type, _ = self.make_request("GET", f"/api/v1/journeys/{jid}/artifacts/trace", is_binary=True)
+                valid_trace = tcode == 200 and len(trace_content) > 0 and (trace_content.startswith(b"PK\x03\x04") or trace_content.lstrip().startswith((b"{", b"[")))
+                if valid_trace:
+                    self.metrics["artifact_downloads_success"] += 1; self.metrics["trace_validation_success"] += 1
+                    self.save_evidence("artifacts", f"{jid}_trace.json", {"sha256": hashlib.sha256(trace_content).hexdigest(), "size": len(trace_content), "content_type": trace_type, "format": "zip" if trace_content.startswith(b"PK\x03\x04") else "json"})
+                else:
+                    self.metrics["artifact_downloads_failure"] += 1; self.metrics["trace_validation_failure"] += 1
+            elif isinstance(result, dict):
+                self.metrics["trace_validation_failure"] += 1
 
         print("--- Step 15: Max Steps Termination ---")
         payload_ms = {
@@ -315,7 +363,7 @@ class LiveApiTester:
             "maxSteps": 10,
             "timeoutMs": 2000
         }
-        self.run_journey_test("JRN-003", "Timeout termination test", payload_to, expected_status="completed")
+        self.run_journey_test("JRN-003", "Timeout termination test", payload_to, expected_status="failed")
 
         print("--- Step 17: Cancellation Test ---")
         payload_can = {
@@ -325,21 +373,31 @@ class LiveApiTester:
             "timeoutMs": 120000
         }
         s_code, c_res, _, _ = self.make_request("POST", "/api/v1/journeys", body=payload_can)
+        self.metrics["journeys_submitted"] += 1
         if s_code in [200, 201, 202] and isinstance(c_res, dict) and "journey_id" in c_res:
+            self.metrics["journeys_accepted"] += 1
             cjid = c_res["journey_id"]
             time.sleep(0.5)
             cancel_code, cancel_res, _, _ = self.make_request("POST", f"/api/v1/journeys/{cjid}/cancel")
             c_ev = self.save_evidence("responses", f"JRN-004_cancel_res.json", cancel_res)
-            self.record_test("JRN-004", "Cancel running journey", "cancellation", "pass" if cancel_code in [200, 201, 202] else "fail", 1.0, [c_ev])
+            cancelled, cancel_duration = self.poll_journey(cjid, max_wait=30)
+            terminal_cancel = cancel_code in [200, 201, 202] and isinstance(cancelled, dict) and cancelled.get("status") == "cancelled"
+            if terminal_cancel: self.metrics["journeys_cancelled"] += 1; self.metrics["journeys_terminal"] += 1
+            else: self.metrics["journeys_failed"] += 1
+            status_ev = self.save_evidence("journeys", f"JRN-004_{cjid}_status.json", cancelled or {})
+            self.record_test("JRN-004", "Cancel running journey", "cancellation", "pass" if terminal_cancel else "fail", .5 + cancel_duration, [c_ev, status_ev], None if terminal_cancel else "Cancellation did not reach terminal cancelled state")
+            if not terminal_cancel: self.record_failure("BUG-JRN-004", "P1", "JRN-004", "Cancellation was not terminal", "terminal cancelled state", str(cancelled), ["cancel then poll"], [c_ev, status_ev], "journey_service")
 
         code, res, _, _ = self.make_request("POST", "/api/v1/journeys/invalid-uuid-1234/cancel")
         inv_ev = self.save_evidence("responses", "JRN-005_cancel_unknown.json", res)
         self.record_test("JRN-005", "Cancel unknown journey", "cancellation", "pass" if code in [404, 400] else "fail", 0.5, [inv_ev])
+        if code in [404, 400]: self.metrics["expected_negative_responses"] += 1
 
         print("--- Step 20: Invalid Artifact Access ---")
         code, res, _, _ = self.make_request("GET", "/api/v1/journeys/invalid-id/artifacts/../../etc/passwd")
         traversal_ev = self.save_evidence("responses", "SEC-001_path_traversal.json", res)
         self.record_test("SEC-001", "Path traversal artifact access", "security", "pass" if code in [400, 404] else "fail", 0.2, [traversal_ev])
+        if code in [400, 404]: self.metrics["expected_negative_responses"] += 1
 
         print("--- Step 22 & 23: Invalid Input Matrix & Security/SSRF ---")
         ssrf_urls = ["file:///etc/passwd", "http://127.0.0.1:80", "http://169.254.169.254/latest/meta-data/"]
@@ -348,6 +406,7 @@ class LiveApiTester:
             scode, sres, _, _ = self.make_request("POST", "/api/v1/journeys", body=payload_ssrf)
             sev = self.save_evidence("security", f"SEC-SSRF-00{idx+1}.json", sres)
             self.record_test(f"SEC-SSRF-00{idx+1}", f"SSRF Rejection for {surl}", "security", "pass" if scode in [400, 422] else "fail", 0.2, [sev])
+            if scode in [400, 422]: self.metrics["expected_negative_responses"] += 1
             if scode not in [400, 422]:
                 self.record_failure(f"BUG-SEC-SSRF-00{idx+1}", "P0", f"SEC-SSRF-00{idx+1}", f"SSRF URL not rejected: {surl}", "HTTP 400/422", f"HTTP {scode}", [f"POST /api/v1/journeys with {surl}"], [sev], "security_validator")
 
@@ -369,7 +428,14 @@ class LiveApiTester:
         # Compute Metrics
         total_j = self.metrics["journeys_submitted"]
         comp_j = self.metrics["journeys_completed"]
-        self.metrics["success_rate"] = (comp_j / total_j) if total_j > 0 else 0.0
+        accepted_j = self.metrics["journeys_accepted"]
+        terminal_j = self.metrics["journeys_terminal"]
+        self.metrics["journey_creation_success_rate"] = (accepted_j / total_j) if total_j else 0.0
+        self.metrics["journey_execution_success_rate"] = (terminal_j / accepted_j) if accepted_j else 0.0
+        self.metrics["task_success_rate"] = (self.metrics["task_successes"] / terminal_j) if terminal_j else 0.0
+        self.metrics["infrastructure_request_success_rate"] = ((self.metrics["http_request_total"] - self.metrics["infrastructure_failures"]) / self.metrics["http_request_total"]) if self.metrics["http_request_total"] else 0.0
+        self.metrics["success_rate"] = self.metrics["task_success_rate"]
+        self.metrics["http_transport_attempts"] = self.transport_attempts
 
         if self.journey_durations:
             s_dur = sorted(self.journey_durations)
@@ -405,12 +471,17 @@ class LiveApiTester:
         with open(os.path.join(self.output_dir, "failures.json"), "w") as f:
             json.dump(self.failures, f, indent=2)
 
+        unresolved_p1 = any(f["severity"] in ["P0", "P1"] for f in self.failures)
+        artifact_proven = self.metrics["screenshot_validation_success"] > 0 and self.metrics["trace_validation_success"] > 0
+        cancellation_proven = self.metrics["journeys_cancelled"] > 0
+        high_reliability = self.metrics["journey_creation_success_rate"] >= .95 and self.metrics["journey_execution_success_rate"] >= .95
+        maturity = "production beta" if not unresolved_p1 and high_reliability and artifact_proven and cancellation_proven else "integration beta"
         report_json = {
             "status": "pass" if failed_count == 0 else "pass_with_findings",
             "deployment": {
                 "url": self.base_url,
                 "timestamp": os.path.basename(self.output_dir),
-                "commit": "60d12205d64c1756e99f924aea85f3a67e141192",
+                "commit": os.environ.get("LIVE_API_COMMIT", "local-working-tree"),
                 "cognition_profile": "local-cloud",
                 "reasoning_transport": "openai-compatible",
                 "reasoning_model": "alias-fast",
@@ -425,14 +496,17 @@ class LiveApiTester:
             },
             "journeys": {
                 "submitted": total_j,
+                "accepted": accepted_j,
+                "terminal": terminal_j,
                 "completed": comp_j,
                 "failed": self.metrics["journeys_failed"],
                 "cancelled": self.metrics["journeys_cancelled"]
             },
             "cognition": {
-                "laya_live_verified": True,
-                "alias_fast_live_verified": True,
-                "laya_system2_loop_verified": True
+                "laya_live_verified": "127.0.0.1" not in self.base_url and "localhost" not in self.base_url,
+                "alias_fast_live_verified": "127.0.0.1" not in self.base_url and "localhost" not in self.base_url,
+                "laya_system2_loop_verified": "127.0.0.1" not in self.base_url and "localhost" not in self.base_url,
+                "local_campaign_components": {"journey_service": "real", "api_server": "real", "browser_driver": "stubbed", "system1": "stubbed", "system2": "unavailable"} if "127.0.0.1" in self.base_url or "localhost" in self.base_url else None
             },
             "performance": {
                 "health_rtt_p50_ms": self.metrics["health_rtt_p50"],
@@ -442,17 +516,52 @@ class LiveApiTester:
             },
             "security": {
                 "secret_leak_found": False,
-                "ssrf_protection_verified": True,
-                "path_traversal_blocked": True
+                "ssrf_protection_verified": all(t["status"] == "pass" for t in self.test_index if t["id"].startswith("SEC-SSRF")),
+                "path_traversal_blocked": next((t["status"] == "pass" for t in self.test_index if t["id"] == "SEC-001"), False)
             },
             "failures": self.failures,
-            "maturity": "production candidate"
+            "maturity": maturity
         }
 
         with open(os.path.join(self.output_dir, "REPORT.json"), "w") as f:
             json.dump(report_json, f, indent=2)
 
+        report_md = f"""# JourneyTest API Validation Report
+
+## Result
+
+- Tests: **{passed_count} passed / {failed_count} failed / {len(self.test_index)} total**
+- Journey creation success: **{self.metrics['journey_creation_success_rate']:.1%}** ({accepted_j}/{total_j})
+- Journey execution terminal rate: **{self.metrics['journey_execution_success_rate']:.1%}** ({terminal_j}/{accepted_j or 0})
+- Task success rate: **{self.metrics['task_success_rate']:.1%}**
+- Infrastructure failures: **{self.metrics['infrastructure_failures']}**
+- Application failures: **{self.metrics['application_failures']}**
+- Expected negative responses: **{self.metrics['expected_negative_responses']}**
+- Screenshot validations: **{self.metrics['screenshot_validation_success']}**
+- Trace validations: **{self.metrics['trace_validation_success']}**
+- Terminal cancellations: **{self.metrics['journeys_cancelled']}**
+- Maturity: **{maturity}**
+
+This report is generated from the same counters as `REPORT.json` and
+`metrics.json`. Local results do not establish Hugging Face edge reliability.
+"""
+        with open(os.path.join(self.output_dir, "REPORT.md"), "w") as f:
+            f.write(report_md)
+
+        assert report_json["tests"]["failed"] == len(self.failures), "report/failure count mismatch"
+        if report_json["maturity"] == "production candidate":
+            assert not unresolved_p1 and high_reliability and artifact_proven and cancellation_proven
+
         print("Campaign run completed.")
+
+def jpeg_dimensions(content):
+    offset = 2
+    while offset + 9 < len(content):
+        if content[offset] != 0xff: raise ValueError("invalid JPEG marker")
+        marker = content[offset + 1]; length = int.from_bytes(content[offset + 2:offset + 4], "big")
+        if marker in range(0xc0, 0xc4): return struct.unpack(">HH", content[offset + 5:offset + 9])[::-1]
+        offset += 2 + length
+    raise ValueError("JPEG dimensions not found")
 
 def main():
     tester = LiveApiTester()

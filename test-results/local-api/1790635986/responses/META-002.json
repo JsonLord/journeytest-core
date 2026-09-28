@@ -1,0 +1,19 @@
+{
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": {
+    "ready": true,
+    "laya": {
+      "ok": true,
+      "backend": "local-campaign-stub"
+    },
+    "capacity": {
+      "active_journeys": 0,
+      "queued_journeys": 0,
+      "browser_slots_used": 0,
+      "browser_slots_available": 1,
+      "max_active_journeys": 1,
+      "max_queued_journeys": 10
+    }
+  }
+}

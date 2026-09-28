@@ -1,0 +1,121 @@
+{
+  "schema_version": "1",
+  "journey_id": "0e4195b3-af40-48d0-a441-d714e3148596",
+  "status": "completed",
+  "goal": "Verify Example Domain text on page",
+  "start_url": "https://example.com",
+  "final_url": "https://example.com",
+  "duration_ms": 4,
+  "step_count": 2,
+  "termination": {
+    "reason": "done"
+  },
+  "reasoning": {
+    "state": {
+      "goal": "Verify Example Domain text on page",
+      "success_criteria": []
+    },
+    "last_assessment": {
+      "decision": "DONE",
+      "goal_satisfied": true,
+      "blocked": false,
+      "progress": "complete",
+      "reason_code": "reasoning_disabled",
+      "confidence": 1
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "timestamp": "2026-09-28T22:53:06.300Z",
+      "url": "https://example.com",
+      "candidates": [
+        {
+          "index": 0,
+          "ref": "more",
+          "role": "link",
+          "name": "More information",
+          "operations": [
+            "CLICK"
+          ]
+        }
+      ],
+      "decision": {
+        "operation": "CLICK",
+        "elementIndex": 0,
+        "confidence": 1
+      },
+      "validation": "OK",
+      "execution": {
+        "success": true,
+        "summary": "clicked",
+        "durationMs": 0
+      },
+      "screenshot": "test-results/local-api/runtime-runs/0e4195b3-af40-48d0-a441-d714e3148596/screenshots/001.png",
+      "timings": {
+        "observationMs": 0,
+        "inferenceMs": 1,
+        "actionMs": 0,
+        "stepMs": 2
+      }
+    },
+    {
+      "step": 2,
+      "timestamp": "2026-09-28T22:53:06.301Z",
+      "url": "https://example.com",
+      "candidates": [
+        {
+          "index": 0,
+          "ref": "more",
+          "role": "link",
+          "name": "More information",
+          "operations": [
+            "CLICK"
+          ]
+        }
+      ],
+      "decision": {
+        "operation": "DONE",
+        "confidence": 1
+      },
+      "validation": "OK",
+      "timings": {
+        "observationMs": 0,
+        "inferenceMs": 0,
+        "actionMs": 0,
+        "stepMs": 0
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "action.executed",
+      "timestamp": "2026-09-28T22:53:06.301Z",
+      "data": {
+        "step": 1,
+        "operation": "CLICK"
+      }
+    }
+  ],
+  "artifacts": {
+    "result": "test-results/local-api/runtime-runs/0e4195b3-af40-48d0-a441-d714e3148596/journey-result.json",
+    "screenshots": [
+      "test-results/local-api/runtime-runs/0e4195b3-af40-48d0-a441-d714e3148596/screenshots/001.png"
+    ],
+    "trace": "test-results/local-api/runtime-runs/0e4195b3-af40-48d0-a441-d714e3148596/trace.json"
+  },
+  "metrics": {
+    "journey_ms": 4,
+    "laya_calls": 2,
+    "laya_total_ms": 1,
+    "reasoning_calls": 0,
+    "reasoning_total_ms": 0,
+    "reasoning_tokens": 0,
+    "reasoning_cost": 0
+  },
+  "context": {},
+  "agent": {
+    "type": "local-campaign-fixture",
+    "backend": "deterministic-stub"
+  }
+}

@@ -18,3 +18,9 @@ storage-state*.json
 *.har
 *.webm
 !.env.example
+
+# Local validation keeps artifact hashes/metadata, not binary payloads.
+test-results/local-api/**/artifacts/**/*.png
+test-results/local-api/**/artifacts/**/*.jpg
+test-results/local-api/**/artifacts/**/*.jpeg
+test-results/local-api/**/artifacts/**/*.zip

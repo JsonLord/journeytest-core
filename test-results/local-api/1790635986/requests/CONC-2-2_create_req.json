@@ -1,0 +1,5 @@
+{
+  "url": "https://example.com",
+  "goal": "Concurrent test goal 2",
+  "maxSteps": 2
+}
