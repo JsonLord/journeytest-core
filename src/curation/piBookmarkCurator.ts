@@ -1,10 +1,9 @@
 import { Agent } from "@earendil-works/pi-agent-core";
 import {
-  getModel,
-  type KnownProvider,
   type Model,
   type Provider,
 } from "@earendil-works/pi-ai";
+import { resolveReasoningModel } from "../directors/pi/modelResolution.js";
 import { z } from "zod";
 import {
   buildRawActionBookmarks,
@@ -68,7 +67,7 @@ export class PiBookmarkCurator implements BookmarkCurator {
   constructor(options: PiBookmarkCuratorOptions) {
     this.piModel =
       options.model ??
-      getModel(options.provider as KnownProvider, options.modelId as never);
+      resolveReasoningModel(String(options.provider ?? ""), options.modelId);
     this.thinkingLevel = options.thinkingLevel ?? "low";
     this.systemPrompt = options.systemPrompt ?? DEFAULT_BOOKMARK_CURATOR_SYSTEM_PROMPT;
     this.getApiKey = options.getApiKey;

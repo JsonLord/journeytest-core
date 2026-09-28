@@ -5,6 +5,9 @@ docs/.vitepress/cache/
 docs/.vitepress/dist/
 runs/
 outputs/
+test-results/
+__pycache__/
+*.pyc
 *.log
 .DS_Store
 .env
