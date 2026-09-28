@@ -2672,9 +2672,10 @@ async function runServerCommand(name: "serve" | "ui" | "space", options: { host:
   await new Promise<void>((resolveReady, reject) => { server.once("error", reject); server.listen(apiPort, useGradio ? "127.0.0.1" : options.host, resolveReady); });
   console.error("API mounted");
   let child: ReturnType<typeof spawn> | undefined;
-  if (useGradio) { const script = resolve(dirname(fileURLToPath(import.meta.url)), "../python/journeytest_web.py"); child = spawn(process.env.JOURNEYTEST_PYTHON ?? "python3", [script], { stdio: "inherit", env: { ...process.env, JOURNEYTEST_API_BASE: `http://127.0.0.1:${apiPort}`, JOURNEYTEST_HOST: options.host, JOURNEYTEST_PORT: String(port) } }); child.once("exit", code => { if (code) console.error(`Gradio exited with code ${code}`); }); }
-  if (useGradio) { await waitForHttp(`http://127.0.0.1:${port}/api/v1/health`, 30_000); console.error("Gradio mounted"); }
-  console.error(`Ready on :${port}`);
+  if (useGradio) { const script = resolve(dirname(fileURLToPath(import.meta.url)), "../python/journeytest_web.py"); child = spawn(process.env.JOURNEYTEST_PYTHON ?? "python3", [script], { stdio: "inherit", env: { ...process.env, JOURNEYTEST_API_BASE: `http://127.0.0.1:${apiPort}`, JOURNEYTEST_HOST: options.host, JOURNEYTEST_PORT: String(port) } }); }
+  try { if (useGradio && child) { await waitForGradioReadiness(`http://127.0.0.1:${port}/api/v1/health`, 30_000, child); console.error("Gradio ready"); } }
+  catch (error) { child?.kill("SIGTERM"); await new Promise<void>(resolveClose => server.close(() => resolveClose())); await runtime.backend.close(); await managed?.stop(); throw error; }
+  console.error(`JourneyTest ready on :${port}`);
   await new Promise<void>(resolveStop => { const stop = () => resolveStop(); process.once("SIGINT", stop); process.once("SIGTERM", stop); child?.once("exit", () => resolveStop()); });
   child?.kill("SIGTERM"); await new Promise<void>(resolveClose => server.close(() => resolveClose())); await runtime.backend.close(); await managed?.stop();
 }
@@ -2695,3 +2696,4 @@ async function runDoctor(smokeModel = false, json = false) {
 
 async function checkBrowserLaunch() { const run = promisify(execFile); await run("agent-browser", ["--session", `journeytest-health-${process.pid}`, "open", "about:blank"], { timeout: 30_000 }); await run("agent-browser", ["--session", `journeytest-health-${process.pid}`, "close"], { timeout: 30_000 }).catch(() => undefined); }
 async function waitForHttp(url: string, timeoutMs: number) { const deadline = Date.now() + timeoutMs; while (Date.now() < deadline) { try { if ((await fetch(url)).ok) return; } catch {} await new Promise(resolveWait => setTimeout(resolveWait, 250)); } throw new Error(`Timed out waiting for ${url}`); }
+export async function waitForGradioReadiness(url: string, timeoutMs: number, child: Pick<ReturnType<typeof spawn>, "once">, wait = waitForHttp) { const exited = new Promise<never>((_, reject) => child.once("exit", (code, signal) => reject(new Error(`Gradio process exited before readiness (exit code ${code ?? "unknown"}${signal ? `, signal ${signal}` : ""})`)))); await Promise.race([wait(url, timeoutMs), exited]); }

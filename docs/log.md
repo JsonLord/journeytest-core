@@ -2,6 +2,10 @@
 
 ## 2026-09-28
 
+- Fixed Space UI startup by declaring every credential control before callback
+  registration, added import-safe Gradio construction tests, made credential
+  diagnostics profile/provider/auth aware, normalized session secrets, and made
+  Python child exit fail readiness immediately.
 - Added one validated dotenv-aware cognition configuration, four routing profiles, conditional hosted Laya and Vision, OpenAI-compatible Spark reasoning, structurally triggered Pi cloud escalation, bounded observable retries, safe CLI/API metadata, per-journey profile overrides, and deployment-aware Gradio settings.
 
 - Tightened requested-trace semantics so a failed trace finalization produces a

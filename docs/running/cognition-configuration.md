@@ -62,6 +62,21 @@ Put these in **Space Secrets**: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
 does not offer `.env.local` persistence. Session selections are ephemeral; to
 persist a credential use **Space → Settings → Repository secrets**.
 
+`HF_TOKEN` is a recommended Space Secret for authenticated model downloads and
+needs only the minimum read permission for the configured checkpoint. It is not
+required for public, ungated Hub resources; when absent, JourneyTest reports a
+warning rather than failing readiness. Native `SPACE_ID`, `SPACE_HOST`, and
+`SYSTEM=spaces` markers detect Spaces—there are no `HF_PROFILE` or `HF_SPACE`
+requirements.
+
+Only the selected cloud provider credential is expected: `OPENAI_API_KEY` for
+OpenAI, `ANTHROPIC_API_KEY` for Anthropic, or `GEMINI_API_KEY` for Gemini.
+Endpoint keys are optional by default. Set `LAYA_HOSTED_AUTH_REQUIRED=true`,
+`LAYA_VISION_AUTH_REQUIRED=true`, or `SPARK_AUTH_REQUIRED=true` only when that
+enabled endpoint actually requires authentication. Empty and whitespace-only
+session fields do not replace environment credentials and never produce an
+empty Bearer header.
+
 ## Routing and reliability
 
 Hosted and Vision endpoints reuse the typed SystemOne contract and append

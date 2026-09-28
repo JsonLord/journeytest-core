@@ -66,3 +66,10 @@ includes a container health check.
 ## Cognition settings
 
 The Gradio header includes a Settings accordion with profile selection, backend toggles, endpoint/model fields, masked credential inputs, retry controls, deployment status, and a safe connection test. Profile selection is passed on each subsequent journey. Local deployments may explicitly save `.env.local`; Space deployments instead show Variable/Secret instructions and never attempt persistence. The journey API accepts the safe `cognitionProfile` field, and OpenAPI/`JourneyResult.cognition` describe the selected profile and routing evidence without credentials. See [cognition runtime configuration](cognition-configuration.md).
+
+UI construction declares all journey, settings, credential, and output
+components before registering callbacks. Importing the Python module only builds
+functions; Uvicorn starts under `__main__`, which permits a deployment regression
+test to build the Gradio tree and generate its config without binding a port.
+The Node launcher races readiness against Python child exit, so construction
+errors surface immediately instead of degrading into a long health timeout.

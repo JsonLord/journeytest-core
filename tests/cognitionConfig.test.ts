@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { cognitionConfigStatus, loadRuntimeCognitionConfig, saveLocalCognitionConfig } from "../src/app/cognitionConfig.js";
+import { applySessionCredentialOverrides } from "../src/app/runtime.js";
 
 describe("runtime cognition configuration", () => {
   it("applies defaults, .env, .env.local, process environment, then runtime override", async () => {
@@ -23,5 +24,36 @@ describe("runtime cognition configuration", () => {
   });
   it("never exposes secret values in status and refuses Space persistence", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "cognition-space-")); const config = loadRuntimeCognitionConfig({ cwd, env: { SPACE_ID: "owner/app", OPENAI_API_KEY: "super-secret" } }); const output = JSON.stringify(cognitionConfigStatus(config)); expect(output).not.toContain("super-secret"); expect(output).toContain('"openai":true'); expect(() => saveLocalCognitionConfig({ OPENAI_API_KEY: "x" }, { cwd, env: { SPACE_ID: "owner/app" } })).toThrow("environment-only");
+  });
+});
+
+describe("profile-aware credentials", () => {
+  it("requires only the selected cloud provider credential in diagnostics", () => {
+    const openai = loadRuntimeCognitionConfig({ env: { CLOUD_REASONING_ENABLED: "true", REASONING_PROVIDER: "openai", REASONING_MODEL: "model", ANTHROPIC_API_KEY: "wrong" } });
+    expect(cognitionConfigStatus(openai, {}).credentialDiagnostics.required).toEqual(["OPENAI_API_KEY"]);
+    const disabled = loadRuntimeCognitionConfig({ env: { CLOUD_REASONING_ENABLED: "false" } });
+    expect(cognitionConfigStatus(disabled, {}).credentialDiagnostics.required).toEqual([]);
+  });
+  it("does not require keys for disabled or unauthenticated optional endpoints", () => {
+    const config = loadRuntimeCognitionConfig({ env: { COGNITION_PROFILE: "local-spark-cloud", SPARK_OPENAI_BASE_URL: "http://spark.test/v1", SPARK_REASONING_ENABLED: "true", CLOUD_REASONING_ENABLED: "false", LAYA_HOSTED_ENABLED: "false", LAYA_VISION_ENABLED: "false" } });
+    expect(config.spark.apiKey).toBeUndefined(); expect(cognitionConfigStatus(config, {}).credentialDiagnostics.required).toEqual([]);
+  });
+  it("allows enabled hosted and Vision endpoints without keys unless auth is explicitly required", () => {
+    const optional = loadRuntimeCognitionConfig({ env: { COGNITION_PROFILE: "dual-laya-cloud", LAYA_HOSTED_BASE_URL: "https://hosted.test", LAYA_VISION_ENABLED: "true", LAYA_VISION_BASE_URL: "https://vision.test", CLOUD_REASONING_ENABLED: "false" } });
+    expect(optional.hostedLaya.apiKey).toBeUndefined(); expect(optional.layaVision.apiKey).toBeUndefined();
+    expect(() => loadRuntimeCognitionConfig({ env: { COGNITION_PROFILE: "dual-laya-cloud", LAYA_HOSTED_BASE_URL: "https://hosted.test", LAYA_HOSTED_AUTH_REQUIRED: "true", CLOUD_REASONING_ENABLED: "false" } })).toThrow("LAYA_HOSTED_API_KEY");
+  });
+  it("reports HF_TOKEN as optional when absent and configured when present", () => {
+    const absent = loadRuntimeCognitionConfig({ env: { SPACE_ID: "test/journeytest" } });
+    expect(cognitionConfigStatus(absent, { SPACE_ID: "test/journeytest" }).credentialDiagnostics).toMatchObject({ huggingFaceToken: "optional-unconfigured", warnings: [expect.stringContaining("public Hugging Face resources")] });
+    expect(cognitionConfigStatus(absent, { SPACE_ID: "test/journeytest", HF_TOKEN: "secret" }).credentialDiagnostics).toMatchObject({ huggingFaceToken: "configured", warnings: [] });
+  });
+});
+
+describe("session credential normalization", () => {
+  it("preserves environment credentials for empty session values and overrides only non-empty values", () => {
+    const config = loadRuntimeCognitionConfig({ env: { OPENAI_API_KEY: "environment-key" } });
+    expect(applySessionCredentialOverrides(config, { OPENAI_API_KEY: "   " })).toBe(config);
+    expect(applySessionCredentialOverrides(config, { OPENAI_API_KEY: " session-key " }).credentials.openai).toBe("session-key");
   });
 });
