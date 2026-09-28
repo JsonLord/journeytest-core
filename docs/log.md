@@ -7,6 +7,13 @@
 - Expanded OpenAPI request/response schemas, made doctor model smoke perform a
   real inference, and pinned Space Python dependencies with CPU-only PyTorch.
 
+- Added optional Pi-backed System-2 supervision around the Laya System-1 action
+  selector, deterministic success checks, event-driven replanning and
+  termination confirmation, compact subgoals, structured verdict evidence, and
+  separate Laya/reasoning cost and latency metrics.
+- Corrected the isolated Laya benchmark response parsing and aggregation so
+  missing answers or latency cannot be counted as valid successful warm runs.
+
 ## 2026-09-27
 
 - Audited the JourneyTest and `laya-browser-agent` architectures and recorded

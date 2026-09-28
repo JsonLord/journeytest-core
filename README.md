@@ -47,6 +47,24 @@ managed localdecide process, prewarms the configured Laya checkpoint, checks
 readiness, and serves the Gradio UI and `/api/v1` together on port 7860. Set
 `LAYA_MODE=remote` and `LAYA_REMOTE_URL` to use an external SystemOne endpoint.
 
+Optionally supervise Laya with Pi-based System-2 reasoning. This keeps Laya on
+the fast action-selection path while Pi interprets goals, confirms ambiguous
+`DONE`/`BLOCKED` candidates, and replans only at strategic checkpoints:
+
+```bash
+REASONING_MODE=pi \
+REASONING_PROVIDER=anthropic \
+REASONING_MODEL=claude-sonnet-4-5 \
+ANTHROPIC_API_KEY=... \
+journeytest serve
+```
+
+`REASONING_MODE=off` is the default for offline compatibility. Optional tuning
+uses `REASONING_THINKING_LEVEL=low|medium|high`,
+`REASONING_NO_PROGRESS_STEPS` (default 3), and
+`REASONING_CHECKPOINT_EVERY_N_STEPS` (default 0/disabled). Explicit success
+criteria in service requests are checked locally before any reasoning call.
+
 Public submissions reject local, loopback, private, link-local, metadata, and
 non-HTTP URLs. Set `JOURNEYTEST_ALLOW_PRIVATE_NETWORKS=1` only for controlled
 local fixture testing.
