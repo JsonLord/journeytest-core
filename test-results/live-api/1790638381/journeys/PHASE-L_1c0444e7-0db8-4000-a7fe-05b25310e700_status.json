@@ -1,0 +1,16 @@
+{
+  "id": "1c0444e7-0db8-4000-a7fe-05b25310e700",
+  "request": {
+    "url": "https://example.com",
+    "goal": "Find a non-existent button",
+    "context": {},
+    "maxSteps": 1,
+    "timeoutMs": 30000,
+    "screenshots": true,
+    "trace": false,
+    "confidenceThreshold": 0.15,
+    "successCriteria": []
+  },
+  "status": "failed",
+  "started_at": "2026-09-28T23:33:56.024Z"
+}

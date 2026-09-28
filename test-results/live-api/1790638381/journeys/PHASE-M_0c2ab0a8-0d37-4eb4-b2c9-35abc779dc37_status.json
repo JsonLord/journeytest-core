@@ -1,0 +1,16 @@
+{
+  "id": "0c2ab0a8-0d37-4eb4-b2c9-35abc779dc37",
+  "request": {
+    "url": "https://example.com",
+    "goal": "Navigate around",
+    "context": {},
+    "maxSteps": 10,
+    "timeoutMs": 2000,
+    "screenshots": true,
+    "trace": false,
+    "confidenceThreshold": 0.15,
+    "successCriteria": []
+  },
+  "status": "failed",
+  "started_at": "2026-09-28T23:34:02.637Z"
+}

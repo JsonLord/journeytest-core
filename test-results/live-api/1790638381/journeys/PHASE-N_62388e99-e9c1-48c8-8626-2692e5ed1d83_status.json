@@ -1,0 +1,16 @@
+{
+  "id": "62388e99-e9c1-48c8-8626-2692e5ed1d83",
+  "request": {
+    "url": "https://example.com",
+    "goal": "Navigate around Example Domain",
+    "context": {},
+    "maxSteps": 10,
+    "timeoutMs": 120000,
+    "screenshots": true,
+    "trace": false,
+    "confidenceThreshold": 0.15,
+    "successCriteria": []
+  },
+  "status": "failed",
+  "started_at": "2026-09-28T23:34:07.640Z"
+}

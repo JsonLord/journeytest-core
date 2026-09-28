@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "INVALID_URL",
+    "message": "Only http(s) journey URLs are allowed",
+    "retryable": false
+  }
+}

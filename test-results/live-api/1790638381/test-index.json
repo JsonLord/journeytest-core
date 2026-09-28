@@ -1,0 +1,611 @@
+[
+  {
+    "id": "PHASE-A-health-1",
+    "name": "Phase A /health attempt 1",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 424,
+    "evidence": [
+      "metadata/PHASE-A-health-1.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-health-2",
+    "name": "Phase A /health attempt 2",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 101,
+    "evidence": [
+      "metadata/PHASE-A-health-2.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-health-3",
+    "name": "Phase A /health attempt 3",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 99,
+    "evidence": [
+      "metadata/PHASE-A-health-3.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-health-4",
+    "name": "Phase A /health attempt 4",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 109,
+    "evidence": [
+      "metadata/PHASE-A-health-4.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-health-5",
+    "name": "Phase A /health attempt 5",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 93,
+    "evidence": [
+      "metadata/PHASE-A-health-5.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_health-1",
+    "name": "Phase A /api/v1/health attempt 1",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 111,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_health-1.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_health-2",
+    "name": "Phase A /api/v1/health attempt 2",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 99,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_health-2.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_health-3",
+    "name": "Phase A /api/v1/health attempt 3",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 99,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_health-3.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_health-4",
+    "name": "Phase A /api/v1/health attempt 4",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 99,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_health-4.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_health-5",
+    "name": "Phase A /api/v1/health attempt 5",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 99,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_health-5.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_ready-1",
+    "name": "Phase A /api/v1/ready attempt 1",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 305,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_ready-1.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_ready-2",
+    "name": "Phase A /api/v1/ready attempt 2",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 100,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_ready-2.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_ready-3",
+    "name": "Phase A /api/v1/ready attempt 3",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 95,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_ready-3.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_ready-4",
+    "name": "Phase A /api/v1/ready attempt 4",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 97,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_ready-4.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_ready-5",
+    "name": "Phase A /api/v1/ready attempt 5",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 94,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_ready-5.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_info-1",
+    "name": "Phase A /api/v1/info attempt 1",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 101,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_info-1.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_info-2",
+    "name": "Phase A /api/v1/info attempt 2",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 94,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_info-2.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_info-3",
+    "name": "Phase A /api/v1/info attempt 3",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 94,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_info-3.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_info-4",
+    "name": "Phase A /api/v1/info attempt 4",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 101,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_info-4.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_info-5",
+    "name": "Phase A /api/v1/info attempt 5",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 98,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_info-5.json"
+    ]
+  },
+  {
+    "id": "PHASE-A--1",
+    "name": "Phase A / attempt 1",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 116,
+    "evidence": [
+      "metadata/PHASE-A--1.json"
+    ]
+  },
+  {
+    "id": "PHASE-A--2",
+    "name": "Phase A / attempt 2",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 100,
+    "evidence": [
+      "metadata/PHASE-A--2.json"
+    ]
+  },
+  {
+    "id": "PHASE-A--3",
+    "name": "Phase A / attempt 3",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 104,
+    "evidence": [
+      "metadata/PHASE-A--3.json"
+    ]
+  },
+  {
+    "id": "PHASE-A--4",
+    "name": "Phase A / attempt 4",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 125,
+    "evidence": [
+      "metadata/PHASE-A--4.json"
+    ]
+  },
+  {
+    "id": "PHASE-A--5",
+    "name": "Phase A / attempt 5",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 193,
+    "evidence": [
+      "metadata/PHASE-A--5.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-docs-1",
+    "name": "Phase A /docs attempt 1",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 89,
+    "evidence": [
+      "metadata/PHASE-A-docs-1.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-docs-2",
+    "name": "Phase A /docs attempt 2",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 96,
+    "evidence": [
+      "metadata/PHASE-A-docs-2.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-docs-3",
+    "name": "Phase A /docs attempt 3",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 94,
+    "evidence": [
+      "metadata/PHASE-A-docs-3.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-docs-4",
+    "name": "Phase A /docs attempt 4",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 86,
+    "evidence": [
+      "metadata/PHASE-A-docs-4.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-docs-5",
+    "name": "Phase A /docs attempt 5",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 89,
+    "evidence": [
+      "metadata/PHASE-A-docs-5.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api-docs-1",
+    "name": "Phase A /api-docs attempt 1",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 98,
+    "evidence": [
+      "metadata/PHASE-A-api-docs-1.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api-docs-2",
+    "name": "Phase A /api-docs attempt 2",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 91,
+    "evidence": [
+      "metadata/PHASE-A-api-docs-2.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api-docs-3",
+    "name": "Phase A /api-docs attempt 3",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 94,
+    "evidence": [
+      "metadata/PHASE-A-api-docs-3.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api-docs-4",
+    "name": "Phase A /api-docs attempt 4",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 92,
+    "evidence": [
+      "metadata/PHASE-A-api-docs-4.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api-docs-5",
+    "name": "Phase A /api-docs attempt 5",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 96,
+    "evidence": [
+      "metadata/PHASE-A-api-docs-5.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_openapi.json-1",
+    "name": "Phase A /api/v1/openapi.json attempt 1",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 94,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_openapi.json-1.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_openapi.json-2",
+    "name": "Phase A /api/v1/openapi.json attempt 2",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 97,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_openapi.json-2.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_openapi.json-3",
+    "name": "Phase A /api/v1/openapi.json attempt 3",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 96,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_openapi.json-3.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_openapi.json-4",
+    "name": "Phase A /api/v1/openapi.json attempt 4",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 97,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_openapi.json-4.json"
+    ]
+  },
+  {
+    "id": "PHASE-A-api_v1_openapi.json-5",
+    "name": "Phase A /api/v1/openapi.json attempt 5",
+    "category": "startup_health",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 94,
+    "evidence": [
+      "metadata/PHASE-A-api_v1_openapi.json-5.json"
+    ]
+  },
+  {
+    "id": "PHASE-B-OPENAPI",
+    "name": "OpenAPI Specification Validation",
+    "category": "openapi",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 94,
+    "evidence": [
+      "metadata/openapi.json"
+    ]
+  },
+  {
+    "id": "PHASE-C-READY",
+    "name": "Readiness Semantics Check",
+    "category": "readiness",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 92,
+    "evidence": [
+      "metadata/ready_semantics.json"
+    ]
+  },
+  {
+    "id": "PHASE-D-JOURNEY",
+    "name": "Deterministic Example Journey",
+    "category": "cognition",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 48844,
+    "evidence": [
+      "requests/PHASE-D_create_req.json",
+      "responses/PHASE-D_create_res.json",
+      "journeys/PHASE-D_2618236c-a3cf-447e-91f7-6bb897b47e4d_status.json",
+      "events/PHASE-D_2618236c-a3cf-447e-91f7-6bb897b47e4d_events.json",
+      "responses/PHASE-D_2618236c-a3cf-447e-91f7-6bb897b47e4d_result.json"
+    ]
+  },
+  {
+    "id": "PHASE-L-MAXSTEPS",
+    "name": "Max Steps = 1 Termination",
+    "category": "journey_limits",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 6613,
+    "evidence": [
+      "journeys/PHASE-L_1c0444e7-0db8-4000-a7fe-05b25310e700_status.json"
+    ]
+  },
+  {
+    "id": "PHASE-M-TIMEOUT",
+    "name": "Short Timeout Termination",
+    "category": "journey_limits",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 4998,
+    "evidence": [
+      "journeys/PHASE-M_0c2ab0a8-0d37-4eb4-b2c9-35abc779dc37_status.json"
+    ]
+  },
+  {
+    "id": "PHASE-N-CANCEL-RUNNING",
+    "name": "Running Journey Cancellation",
+    "category": "cancellation",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 220,
+    "evidence": [
+      "journeys/PHASE-N_62388e99-e9c1-48c8-8626-2692e5ed1d83_status.json"
+    ]
+  },
+  {
+    "id": "PHASE-P-CANCEL-COMPLETED",
+    "name": "Cancel Completed Journey Conflict",
+    "category": "cancellation",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 300,
+    "evidence": [
+      "responses/PHASE-P_cancel_completed.json"
+    ]
+  },
+  {
+    "id": "PHASE-Q-CANCEL-UNKNOWN",
+    "name": "Cancel Unknown Journey Rejection",
+    "category": "cancellation",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 300,
+    "evidence": [
+      "responses/PHASE-Q_cancel_unknown.json"
+    ]
+  },
+  {
+    "id": "SEC-001",
+    "name": "Path Traversal Artifact Rejection",
+    "category": "security",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-001_path_traversal.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-001",
+    "name": "SSRF Input Rejection: file:///etc/passwd",
+    "category": "security",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-001.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-002",
+    "name": "SSRF Input Rejection: javascript:alert(1)",
+    "category": "security",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-002.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-003",
+    "name": "SSRF Input Rejection: data:text/plain,test",
+    "category": "security",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-003.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-004",
+    "name": "SSRF Input Rejection: http://localhost",
+    "category": "security",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-004.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-005",
+    "name": "SSRF Input Rejection: http://127.0.0.1",
+    "category": "security",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-005.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-006",
+    "name": "SSRF Input Rejection: http://169.254.169.254",
+    "category": "security",
+    "status": "pass",
+    "classification": "PASS",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-006.json"
+    ]
+  }
+]

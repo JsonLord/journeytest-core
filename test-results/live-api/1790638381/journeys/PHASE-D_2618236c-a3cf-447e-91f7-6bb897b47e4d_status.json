@@ -1,0 +1,16 @@
+{
+  "id": "2618236c-a3cf-447e-91f7-6bb897b47e4d",
+  "request": {
+    "url": "https://example.com",
+    "goal": "Follow the 'More information...' link to open the IANA page",
+    "context": {},
+    "maxSteps": 8,
+    "timeoutMs": 60000,
+    "screenshots": true,
+    "trace": true,
+    "confidenceThreshold": 0.15,
+    "successCriteria": []
+  },
+  "status": "failed",
+  "started_at": "2026-09-28T23:33:07.377Z"
+}

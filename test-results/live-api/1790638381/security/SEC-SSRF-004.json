@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "Local and metadata hosts are not allowed",
+    "retryable": false
+  }
+}
