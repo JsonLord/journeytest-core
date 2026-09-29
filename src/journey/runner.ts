@@ -36,6 +36,15 @@ export class JourneyRunner {
         abort(); const stepStarted = Date.now(); const observationStarted = Date.now(); const observation = await observe(this.options.driver); const observationMs = Date.now() - observationStarted;
         if (previousObservation && previousObservation.url === observation.url && previousObservation.visibleText === observation.visibleText) noProgressSteps++; else noProgressSteps = 0;
         const candidates = observation.elements.map((element, index) => ({ index, ref: element.ref, role: element.role, name: element.name, operations: element.operations }));
+        const observedSuccess = evaluateSuccessCriteria(reasoningState.success_criteria, observation);
+        if (observedSuccess.result === "yes") {
+          lastAssessment = { decision: "DONE", goal_satisfied: true, blocked: false, progress: "complete", reason_code: "deterministic_criteria_met", confidence: 1 };
+          verdict = { goal_satisfied: true, blocked: false, confidence: 1, criteria: observedSuccess.criteria, reason_code: "deterministic_criteria_met" };
+          status = "completed"; termination = { reason: "done", message: "All observable success criteria are satisfied" };
+          recordReasoning("observation", { value: lastAssessment, metadata: { provider: "deterministic", model: "explicit-criteria", latencyMs: 0 } }, true);
+          steps.push({ step: n, timestamp: new Date().toISOString(), url: observation.url, candidates, validation: "OK", timings: { observationMs, inferenceMs: 0, actionMs: 0, stepMs: Date.now() - stepStarted } });
+          break;
+        }
         const inferenceStarted = Date.now(); let decision: AgentDecision | undefined; let validation: JourneyStep["validation"] = "OK";
         const agentContext: JourneyContext = { journeyId: id, goal: request.goal, subgoal: reasoningState.subgoal, metadata: request.context, signal };
         try { if (this.options.cognitionRouter) { const routed = await this.options.cognitionRouter.chooseAction({ observation, state: { step: n, previousDecision, previousResult }, context: agentContext, noProgress: noProgressSteps > 0 }); decision = AgentDecisionSchema.parse(routed.decision); cognitionEvidence.push(routed.evidence); events.push({ type: "cognition.action", timestamp: new Date().toISOString(), data: routed.evidence }); } else decision = AgentDecisionSchema.parse(await this.options.agent!.decide(observation, { step: n, previousDecision, previousResult }, agentContext)); metrics.laya_calls++; }

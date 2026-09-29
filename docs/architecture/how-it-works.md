@@ -6,7 +6,7 @@ tags:
   - journeytest
   - architecture
   - runner
-timestamp: 2026-06-29T17:24:07Z
+timestamp: 2026-09-29T00:00:00Z
 source_files:
   - src/core/schemas.ts
   - src/core/validation.ts
@@ -15,6 +15,7 @@ source_files:
   - src/directors/types.ts
   - src/drivers/types.ts
   - src/factories/index.ts
+  - src/journey/runner.ts
 ---
 
 # How JourneyTest Works
@@ -64,6 +65,12 @@ Factories register replaceable implementations. The default registry provides
 the `pi` director, `agent-browser` browser driver, `pi` and `none` bookmark
 curators, and `default`, `convex`, `script`, and `http` data lifecycle
 providers.
+
+Service journeys evaluate explicit, observable success criteria immediately
+after each browser observation. When every URL and visible-text criterion is
+already satisfied, the runner completes with deterministic evidence before
+asking System 1 for an action. This prevents a model from clicking away from an
+already-successful page and avoids an unnecessary inference call.
 
 ## Run Status and Verdict Status
 
