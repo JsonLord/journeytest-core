@@ -28,7 +28,7 @@ This file informs future agents and maintainers about tricks and ongoing deploym
   app_port: 7860
   ---
   ```
-- `.hfignore` to exclude unnecessary files (e.g., `node_modules`, `.git`, `dist`, `coverage`, `runs`)
+- `.hfignore` to exclude unnecessary files (`node_modules`, `.git`, `dist`, `coverage`, `runs`, `test-results`)
 - `Agent.md` (this file)
 
 ---
