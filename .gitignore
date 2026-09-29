@@ -4,7 +4,10 @@ coverage/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
 runs/
+test-results/
 outputs/
+__pycache__/
+*.pyc
 *.log
 .DS_Store
 .env

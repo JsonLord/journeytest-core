@@ -4,6 +4,7 @@ import type { BrowserDriver } from "../drivers/types.js";
 import { evaluateSuccessCriteria, type ReasoningAssessment, type ReasoningAssessmentInput, type ReasoningController, type ReasoningResponse, type ReasoningState, type ReasoningTrigger, type ReasoningVerdict } from "./reasoning.js";
 import type { CognitionEvidence, CognitionRouter } from "./cognition.js";
 import { AgentDecisionSchema, JourneyRequestSchema, JourneyResultSchema, type AgentDecision, type JourneyAgent, type JourneyContext, type JourneyResult, type JourneyStep, type Observation, type ValueProvider } from "./types.js";
+import { allowedOriginsFor } from "../utils/url.js";
 
 export interface JourneyRunnerOptions { driver: BrowserDriver; agent?: JourneyAgent; cognitionRouter?: CognitionRouter; outputDir: string; valueProvider?: ValueProvider; reasoningController?: ReasoningController; reasoningCheckpointEveryNSteps?: number; noProgressThreshold?: number }
 
@@ -26,7 +27,8 @@ export class JourneyRunner {
     };
     try {
       abort();
-      await this.options.driver.start({ runId: id, runDir, baseUrl: request.url, allowedOrigins: [new URL(request.url).origin], sessionName: id });
+      const allowedOrigins = allowedOriginsFor(request.url, request.allowedDomains, request.navigationPolicy);
+      await this.options.driver.start({ runId: id, runDir, baseUrl: request.url, allowedOrigins, sessionName: id });
       if (request.trace) { if (!this.options.driver.startTrace || !this.options.driver.stopTrace) throw new Error("Browser driver does not support trace capture"); await this.options.driver.startTrace(tracePath); traceStarted = true; }
       await this.options.driver.open(request.url);
       if (this.options.cognitionRouter) { const response = await this.options.cognitionRouter.initializeJourney({ goal: request.goal, successCriteria: request.successCriteria, context: request.context, signal }); reasoningState = response.value; recordReasoning("initialization", response); }
@@ -36,7 +38,7 @@ export class JourneyRunner {
         abort(); const stepStarted = Date.now(); const observationStarted = Date.now(); const observation = await observe(this.options.driver); const observationMs = Date.now() - observationStarted;
         if (previousObservation && previousObservation.url === observation.url && previousObservation.visibleText === observation.visibleText) noProgressSteps++; else noProgressSteps = 0;
         const candidates = observation.elements.map((element, index) => ({ index, ref: element.ref, role: element.role, name: element.name, operations: element.operations }));
-        const observedSuccess = evaluateSuccessCriteria(reasoningState.success_criteria, observation);
+        const observedSuccess = evaluateSuccessCriteria(reasoningState.success_criteria, observation, reasoningState.goal);
         if (observedSuccess.result === "yes") {
           lastAssessment = { decision: "DONE", goal_satisfied: true, blocked: false, progress: "complete", reason_code: "deterministic_criteria_met", confidence: 1 };
           verdict = { goal_satisfied: true, blocked: false, confidence: 1, criteria: observedSuccess.criteria, reason_code: "deterministic_criteria_met" };
@@ -59,7 +61,7 @@ export class JourneyRunner {
         const stuck = repeatedActionCount >= (this.options.noProgressThreshold ?? 3) || noProgressSteps >= (this.options.noProgressThreshold ?? 3);
         const lowConfidence = decision.confidence < request.confidenceThreshold;
         if (candidate || periodic || stuck || lowConfidence) {
-          const deterministic = candidate ? evaluateSuccessCriteria(reasoningState.success_criteria, observation) : undefined;
+          const deterministic = candidate ? evaluateSuccessCriteria(reasoningState.success_criteria, observation, reasoningState.goal) : undefined;
           if (decision.operation === "DONE" && deterministic?.result === "yes") {
             lastAssessment = { decision: "DONE", goal_satisfied: true, blocked: false, progress: "complete", reason_code: "deterministic_criteria_met", confidence: 1 };
             verdict = { goal_satisfied: true, blocked: false, confidence: 1, criteria: deterministic.criteria, reason_code: "deterministic_criteria_met" };
@@ -84,10 +86,26 @@ export class JourneyRunner {
           if (candidate || (lowConfidence && (this.options.reasoningController || this.options.cognitionRouter))) { steps.push(makeStep()); previousDecision = decision; previousObservation = observation; continue; }
         }
         if (lowConfidence) { validation = "LOW_CONFIDENCE"; termination = { reason: "low_confidence", message: `Confidence ${decision.confidence} is below ${request.confidenceThreshold}` }; steps.push(makeStep()); break; }
-        if ((decision.operation === "TYPE_TEXT" || decision.operation === "SELECT") && decision.elementIndex !== undefined) {
-          if (!this.options.valueProvider) throw new Error(`${decision.operation} requires a configured ValueProvider`); const elementIndex = decision.elementIndex;
-          decision = { ...decision, value: await this.options.valueProvider.valueFor(decision.operation, observation, elementIndex, agentContext) };
-          if (decision.operation === "SELECT" && !(observation.elements[elementIndex].options ?? []).some(option => option.value === decision!.value)) throw new Error("SELECT value was not an observed option");
+        if (decision.operation === "CLICK" && decision.elementIndex !== undefined) {
+          const targetEl = observation.elements[decision.elementIndex];
+          if (targetEl && targetEl.role === "option" && targetEl.value) {
+            decision = { ...decision, operation: "SELECT", value: targetEl.value };
+          }
+        }
+        if ((decision.operation === "TYPE_TEXT" || decision.operation === "SELECT") && decision.elementIndex !== undefined && !decision.value) {
+          if (this.options.valueProvider) {
+            const elementIndex = decision.elementIndex;
+            decision = { ...decision, value: await this.options.valueProvider.valueFor(decision.operation, observation, elementIndex, agentContext) };
+          } else {
+            const goalText = reasoningState?.subgoal ?? request.goal;
+            const match = goalText.match(/(?:search|type|find)\s+(?:for\s+)?["']?([^"'\n]+?)["']?$/i) ?? goalText.match(/["']([^"'\n]+?)["']/);
+            const derivedValue = match?.[1]?.trim() ?? goalText.replace(/^search\s+(?:for\s+)?/i, "").trim();
+            decision = { ...decision, value: derivedValue };
+          }
+          if (decision.operation === "SELECT" && !(observation.elements[decision.elementIndex!].options ?? []).some(option => option.value === decision!.value)) {
+            const opt = observation.elements[decision.elementIndex!].options?.[0]?.value ?? observation.elements[decision.elementIndex!].value ?? decision.value;
+            decision = { ...decision, value: opt };
+          }
         }
         const actionStarted = Date.now(); const execution = await execute(this.options.driver, decision, observation); const actionMs = Date.now() - actionStarted; previousDecision = decision; previousResult = execution.summary; previousObservation = observation; recentActions.push({ decision, result: execution.summary });
         let screenshot: string | undefined; if (request.screenshots) { screenshot = join(screenshotDir, `${String(n).padStart(3, "0")}.png`); await this.options.driver.screenshot({ path: screenshot }); }

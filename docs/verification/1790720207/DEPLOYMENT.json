@@ -1,0 +1,12 @@
+{
+  "deployment": {
+    "space": "Leon4gr45/nova-right-nav",
+    "runtime_stage": "RUNNING",
+    "deployed_sha": "a5dea1216fd26dae1177332ff1d7313aa956d63c",
+    "source_commit": "90dd77eb71da6c28f140c187a7f8cf556bcdf13c",
+    "pr": 11,
+    "sdk": "docker",
+    "hardware": "cpu-basic",
+    "identity_status": "DEPLOYMENT_IDENTITY_VERIFIED"
+  }
+}

@@ -1,0 +1,352 @@
+[
+  {
+    "id": "META-001",
+    "name": "Health endpoint",
+    "category": "api_surface",
+    "intent": "runtime",
+    "status": "pass",
+    "duration_ms": 150,
+    "evidence": [
+      "responses/META-001.json"
+    ]
+  },
+  {
+    "id": "META-002",
+    "name": "Ready endpoint",
+    "category": "api_surface",
+    "intent": "runtime",
+    "status": "pass",
+    "duration_ms": 107,
+    "evidence": [
+      "responses/META-002.json"
+    ]
+  },
+  {
+    "id": "META-003",
+    "name": "Info endpoint",
+    "category": "api_surface",
+    "intent": "runtime",
+    "status": "pass",
+    "duration_ms": 100,
+    "evidence": [
+      "responses/META-003.json"
+    ]
+  },
+  {
+    "id": "META-004",
+    "name": "OpenAPI JSON endpoint",
+    "category": "api_surface",
+    "intent": "runtime",
+    "status": "pass",
+    "duration_ms": 101,
+    "evidence": [
+      "responses/META-004.json"
+    ]
+  },
+  {
+    "id": "API-001",
+    "name": "Root page",
+    "category": "api_surface",
+    "intent": "runtime",
+    "status": "pass",
+    "duration_ms": 102,
+    "evidence": [
+      "responses/API-001.json"
+    ]
+  },
+  {
+    "id": "API-002",
+    "name": "Docs page",
+    "category": "api_surface",
+    "intent": "runtime",
+    "status": "pass",
+    "duration_ms": 92,
+    "evidence": [
+      "responses/API-002.json"
+    ]
+  },
+  {
+    "id": "API-003",
+    "name": "API Docs page",
+    "category": "api_surface",
+    "intent": "runtime",
+    "status": "pass",
+    "duration_ms": 96,
+    "evidence": [
+      "responses/API-003.json"
+    ]
+  },
+  {
+    "id": "API-004",
+    "name": "Simple health endpoint",
+    "category": "api_surface",
+    "intent": "runtime",
+    "status": "pass",
+    "duration_ms": 100,
+    "evidence": [
+      "responses/API-004.json"
+    ]
+  },
+  {
+    "id": "JRN-001",
+    "name": "Deterministic Example Domain Journey",
+    "category": "journey",
+    "intent": "behavioral",
+    "status": "fail",
+    "duration_ms": 11230,
+    "evidence": [
+      "requests/JRN-001_create_req.json",
+      "responses/JRN-001_create_res.json",
+      "journeys/JRN-001_b673b6e9-aade-451c-aa3b-729e0290ce49_status.json",
+      "events/JRN-001_b673b6e9-aade-451c-aa3b-729e0290ce49_events.json",
+      "responses/JRN-001_b673b6e9-aade-451c-aa3b-729e0290ce49_result.json"
+    ]
+  },
+  {
+    "id": "TAOS-001",
+    "name": "TAOS Pricing Discovery",
+    "category": "journey",
+    "intent": "behavioral",
+    "status": "fail",
+    "duration_ms": 23667,
+    "evidence": [
+      "requests/TAOS-001_create_req.json",
+      "responses/TAOS-001_create_res.json",
+      "journeys/TAOS-001_b558e71a-a979-4e9a-88f3-e09000bf5f70_status.json",
+      "events/TAOS-001_b558e71a-a979-4e9a-88f3-e09000bf5f70_events.json",
+      "responses/TAOS-001_b558e71a-a979-4e9a-88f3-e09000bf5f70_result.json"
+    ]
+  },
+  {
+    "id": "PY-001",
+    "name": "Python Documentation Discovery",
+    "category": "journey",
+    "intent": "behavioral",
+    "status": "fail",
+    "duration_ms": 64605,
+    "evidence": [
+      "requests/PY-001_create_req.json",
+      "responses/PY-001_create_res.json",
+      "journeys/PY-001_f3922423-385c-4352-8082-dcb49a5b77b3_status.json",
+      "events/PY-001_f3922423-385c-4352-8082-dcb49a5b77b3_events.json",
+      "responses/PY-001_f3922423-385c-4352-8082-dcb49a5b77b3_result.json"
+    ]
+  },
+  {
+    "id": "HEROKU-001",
+    "name": "The Internet Dropdown Selection",
+    "category": "journey",
+    "intent": "behavioral",
+    "status": "pass",
+    "duration_ms": 4661,
+    "evidence": [
+      "requests/HEROKU-001_create_req.json",
+      "responses/HEROKU-001_create_res.json",
+      "journeys/HEROKU-001_0f71bc70-5584-4f08-b2f0-ab261a5262ac_status.json",
+      "events/HEROKU-001_0f71bc70-5584-4f08-b2f0-ab261a5262ac_events.json",
+      "responses/HEROKU-001_0f71bc70-5584-4f08-b2f0-ab261a5262ac_result.json"
+    ]
+  },
+  {
+    "id": "WIKI-001",
+    "name": "Wikipedia AI Search",
+    "category": "journey",
+    "intent": "behavioral",
+    "status": "fail",
+    "duration_ms": 22277,
+    "evidence": [
+      "requests/WIKI-001_create_req.json",
+      "responses/WIKI-001_create_res.json",
+      "journeys/WIKI-001_72cd133f-feb4-4ee8-88af-aa54e4a7ba39_status.json",
+      "events/WIKI-001_72cd133f-feb4-4ee8-88af-aa54e4a7ba39_events.json",
+      "responses/WIKI-001_72cd133f-feb4-4ee8-88af-aa54e4a7ba39_result.json"
+    ]
+  },
+  {
+    "id": "JRN-002",
+    "name": "Max steps termination test",
+    "category": "journey",
+    "intent": "termination",
+    "status": "pass",
+    "duration_ms": 4644,
+    "evidence": [
+      "requests/JRN-002_create_req.json",
+      "responses/JRN-002_create_res.json",
+      "journeys/JRN-002_d0471203-5418-4d9f-b5a9-a1a958dcb16a_status.json",
+      "events/JRN-002_d0471203-5418-4d9f-b5a9-a1a958dcb16a_events.json",
+      "responses/JRN-002_d0471203-5418-4d9f-b5a9-a1a958dcb16a_result.json"
+    ]
+  },
+  {
+    "id": "JRN-003",
+    "name": "Timeout termination test",
+    "category": "journey",
+    "intent": "termination",
+    "status": "pass",
+    "duration_ms": 4632,
+    "evidence": [
+      "requests/JRN-003_create_req.json",
+      "responses/JRN-003_create_res.json",
+      "journeys/JRN-003_f3e88109-39d1-47c8-affa-4ae4322793f8_status.json",
+      "events/JRN-003_f3e88109-39d1-47c8-affa-4ae4322793f8_events.json",
+      "responses/JRN-003_f3e88109-39d1-47c8-affa-4ae4322793f8_result.json"
+    ]
+  },
+  {
+    "id": "JRN-004",
+    "name": "Cancel running journey",
+    "category": "cancellation",
+    "intent": "termination",
+    "status": "pass",
+    "duration_ms": 3766,
+    "evidence": [
+      "responses/JRN-004_cancel_res.json",
+      "journeys/JRN-004_d2d22864-b2dd-4cc5-91c4-ae207c15cd89_status.json"
+    ]
+  },
+  {
+    "id": "JRN-005",
+    "name": "Cancel unknown journey",
+    "category": "cancellation",
+    "intent": "termination",
+    "status": "pass",
+    "duration_ms": 200,
+    "evidence": [
+      "responses/JRN-005_cancel_unknown.json"
+    ]
+  },
+  {
+    "id": "SEC-001",
+    "name": "Path traversal artifact access",
+    "category": "security",
+    "intent": "security",
+    "status": "pass",
+    "duration_ms": 200,
+    "evidence": [
+      "responses/SEC-001_path_traversal.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-001",
+    "name": "SSRF Rejection for file:///etc/passwd",
+    "category": "security",
+    "intent": "security",
+    "status": "pass",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-001.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-002",
+    "name": "SSRF Rejection for http://127.0.0.1:80",
+    "category": "security",
+    "intent": "security",
+    "status": "pass",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-002.json"
+    ]
+  },
+  {
+    "id": "SEC-SSRF-003",
+    "name": "SSRF Rejection for http://169.254.169.254/latest/meta-data/",
+    "category": "security",
+    "intent": "security",
+    "status": "pass",
+    "duration_ms": 200,
+    "evidence": [
+      "security/SEC-SSRF-003.json"
+    ]
+  },
+  {
+    "id": "REP-001",
+    "name": "Repeatability Run 1",
+    "category": "journey",
+    "intent": "behavioral",
+    "status": "fail",
+    "duration_ms": 22280,
+    "evidence": [
+      "requests/REP-001_create_req.json",
+      "responses/REP-001_create_res.json",
+      "journeys/REP-001_48ddfe10-e9d7-4282-9422-769661e10478_status.json",
+      "events/REP-001_48ddfe10-e9d7-4282-9422-769661e10478_events.json",
+      "responses/REP-001_48ddfe10-e9d7-4282-9422-769661e10478_result.json"
+    ]
+  },
+  {
+    "id": "REP-002",
+    "name": "Repeatability Run 2",
+    "category": "journey",
+    "intent": "behavioral",
+    "status": "fail",
+    "duration_ms": 24409,
+    "evidence": [
+      "requests/REP-002_create_req.json",
+      "responses/REP-002_create_res.json",
+      "journeys/REP-002_b1fc5f21-ef4f-4253-8084-48a243557960_status.json",
+      "events/REP-002_b1fc5f21-ef4f-4253-8084-48a243557960_events.json",
+      "responses/REP-002_b1fc5f21-ef4f-4253-8084-48a243557960_result.json"
+    ]
+  },
+  {
+    "id": "REP-003",
+    "name": "Repeatability Run 3",
+    "category": "journey",
+    "intent": "behavioral",
+    "status": "fail",
+    "duration_ms": 13463,
+    "evidence": [
+      "requests/REP-003_create_req.json",
+      "responses/REP-003_create_res.json",
+      "journeys/REP-003_86882edc-5562-41ed-80b7-4bf1b3a0e550_status.json",
+      "events/REP-003_86882edc-5562-41ed-80b7-4bf1b3a0e550_events.json",
+      "responses/REP-003_86882edc-5562-41ed-80b7-4bf1b3a0e550_result.json"
+    ]
+  },
+  {
+    "id": "CONC-1-1",
+    "name": "Concurrency 1 Worker 1",
+    "category": "journey",
+    "intent": "behavioral",
+    "status": "fail",
+    "duration_ms": 39870,
+    "evidence": [
+      "requests/CONC-1-1_create_req.json",
+      "responses/CONC-1-1_create_res.json",
+      "journeys/CONC-1-1_a7d8e423-c536-4d55-8ea5-f3aa13e80ad3_status.json",
+      "events/CONC-1-1_a7d8e423-c536-4d55-8ea5-f3aa13e80ad3_events.json",
+      "responses/CONC-1-1_a7d8e423-c536-4d55-8ea5-f3aa13e80ad3_result.json"
+    ]
+  },
+  {
+    "id": "CONC-2-1",
+    "name": "Concurrency 2 Worker 1",
+    "category": "journey",
+    "intent": "behavioral",
+    "status": "fail",
+    "duration_ms": 9068,
+    "evidence": [
+      "requests/CONC-2-1_create_req.json",
+      "responses/CONC-2-1_create_res.json",
+      "journeys/CONC-2-1_06f9c35f-7e96-46d5-b9ca-02350f1b8caa_status.json",
+      "events/CONC-2-1_06f9c35f-7e96-46d5-b9ca-02350f1b8caa_events.json",
+      "responses/CONC-2-1_06f9c35f-7e96-46d5-b9ca-02350f1b8caa_result.json"
+    ]
+  },
+  {
+    "id": "CONC-2-2",
+    "name": "Concurrency 2 Worker 2",
+    "category": "journey",
+    "intent": "behavioral",
+    "status": "fail",
+    "duration_ms": 25606,
+    "evidence": [
+      "requests/CONC-2-2_create_req.json",
+      "responses/CONC-2-2_create_res.json",
+      "journeys/CONC-2-2_b5121cc4-e08a-4949-9468-3b0bbcdbab10_status.json",
+      "events/CONC-2-2_b5121cc4-e08a-4949-9468-3b0bbcdbab10_events.json",
+      "responses/CONC-2-2_b5121cc4-e08a-4949-9468-3b0bbcdbab10_result.json"
+    ]
+  }
+]

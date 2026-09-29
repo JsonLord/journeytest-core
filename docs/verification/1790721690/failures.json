@@ -1,0 +1,82 @@
+[
+  {
+    "id": "BUG-JRN-001",
+    "severity": "P2",
+    "test_id": "JRN-001",
+    "title": "Journey Deterministic Example Domain Journey ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (JRN-001)"
+    ],
+    "evidence": [
+      "requests/JRN-001_create_req.json",
+      "journeys/JRN-001_a84bc389-e27c-4eb1-99a1-47d21a327f14_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-TAOS-001",
+    "severity": "P2",
+    "test_id": "TAOS-001",
+    "title": "Journey TAOS Pricing Discovery ended in running",
+    "expected": "status: completed",
+    "actual": "status: running",
+    "reproduction": [
+      "POST /api/v1/journeys (TAOS-001)"
+    ],
+    "evidence": [
+      "requests/TAOS-001_create_req.json",
+      "journeys/TAOS-001_ce6dc337-babe-4635-94d9-c6155807f93d_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-PY-001",
+    "severity": "P2",
+    "test_id": "PY-001",
+    "title": "Journey Python Documentation Discovery ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (PY-001)"
+    ],
+    "evidence": [
+      "requests/PY-001_create_req.json",
+      "journeys/PY-001_ce12f705-84da-4648-b43c-fcc9209af3e0_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-HEROKU-001",
+    "severity": "P2",
+    "test_id": "HEROKU-001",
+    "title": "Journey The Internet Dropdown Selection ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (HEROKU-001)"
+    ],
+    "evidence": [
+      "requests/HEROKU-001_create_req.json",
+      "journeys/HEROKU-001_113f3a34-87b6-49a8-a468-97418e2e31f5_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-WIKI-001",
+    "severity": "P2",
+    "test_id": "WIKI-001",
+    "title": "Journey Wikipedia AI Search ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (WIKI-001)"
+    ],
+    "evidence": [
+      "requests/WIKI-001_create_req.json",
+      "journeys/WIKI-001_c18aceb5-3d3f-4923-b27b-50dda9be39a6_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  }
+]

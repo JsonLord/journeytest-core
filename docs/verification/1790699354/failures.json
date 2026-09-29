@@ -1,0 +1,306 @@
+[
+  {
+    "id": "BUG-JRN-001",
+    "severity": "P2",
+    "test_id": "JRN-001",
+    "title": "Journey Deterministic Example Domain Journey ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (JRN-001)"
+    ],
+    "evidence": [
+      "requests/JRN-001_create_req.json",
+      "journeys/JRN-001_683f599f-a71b-4732-94b1-da5d7611d883_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-JRN-002",
+    "severity": "P2",
+    "test_id": "JRN-002",
+    "title": "Journey Max steps termination test ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (JRN-002)"
+    ],
+    "evidence": [
+      "requests/JRN-002_create_req.json",
+      "journeys/JRN-002_37092a0b-9e86-4edc-baad-d2eec547b142_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-001",
+    "severity": "P2",
+    "test_id": "REP-001",
+    "title": "Journey Repeatability Run 1 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (REP-001)"
+    ],
+    "evidence": [
+      "requests/REP-001_create_req.json",
+      "journeys/REP-001_bd9281d6-8685-4ec2-8032-14472d82211e_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-002",
+    "severity": "P2",
+    "test_id": "REP-002",
+    "title": "Journey Repeatability Run 2 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (REP-002)"
+    ],
+    "evidence": [
+      "requests/REP-002_create_req.json",
+      "journeys/REP-002_5f087a75-8a28-44f9-9ce6-9dad8c2ffe98_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-003",
+    "severity": "P2",
+    "test_id": "REP-003",
+    "title": "Journey Repeatability Run 3 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (REP-003)"
+    ],
+    "evidence": [
+      "requests/REP-003_create_req.json",
+      "journeys/REP-003_d17e2120-8062-45fe-adc1-6aefdbb0a12f_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-004",
+    "severity": "P2",
+    "test_id": "REP-004",
+    "title": "Journey Repeatability Run 4 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (REP-004)"
+    ],
+    "evidence": [
+      "requests/REP-004_create_req.json",
+      "journeys/REP-004_c358a6bf-4234-4098-a2e8-145fde78da6e_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-005",
+    "severity": "P2",
+    "test_id": "REP-005",
+    "title": "Journey Repeatability Run 5 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (REP-005)"
+    ],
+    "evidence": [
+      "requests/REP-005_create_req.json",
+      "journeys/REP-005_9f3a0c97-b42e-4d76-960e-5f153eee2954_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-006",
+    "severity": "P2",
+    "test_id": "REP-006",
+    "title": "Journey Repeatability Run 6 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (REP-006)"
+    ],
+    "evidence": [
+      "requests/REP-006_create_req.json",
+      "journeys/REP-006_97e8c7fa-d565-4fd9-93b4-25c64c5bf306_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-007",
+    "severity": "P2",
+    "test_id": "REP-007",
+    "title": "Journey Repeatability Run 7 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (REP-007)"
+    ],
+    "evidence": [
+      "requests/REP-007_create_req.json",
+      "journeys/REP-007_4554374b-4f68-4250-8a1c-8a21b2d20be2_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-008",
+    "severity": "P2",
+    "test_id": "REP-008",
+    "title": "Journey Repeatability Run 8 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (REP-008)"
+    ],
+    "evidence": [
+      "requests/REP-008_create_req.json",
+      "journeys/REP-008_1758ba81-c42d-431d-8f03-eb0513adee93_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-009",
+    "severity": "P2",
+    "test_id": "REP-009",
+    "title": "Journey Repeatability Run 9 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (REP-009)"
+    ],
+    "evidence": [
+      "requests/REP-009_create_req.json",
+      "journeys/REP-009_db8b287b-3512-43d3-8b99-4b6ea25a694b_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-REP-0010",
+    "severity": "P2",
+    "test_id": "REP-0010",
+    "title": "Journey Repeatability Run 10 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (REP-0010)"
+    ],
+    "evidence": [
+      "requests/REP-0010_create_req.json",
+      "journeys/REP-0010_51a4af35-f30b-44f1-966c-3107415ffde6_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-1-1",
+    "severity": "P2",
+    "test_id": "CONC-1-1",
+    "title": "Journey Concurrency 1 Worker 1 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (CONC-1-1)"
+    ],
+    "evidence": [
+      "requests/CONC-1-1_create_req.json",
+      "journeys/CONC-1-1_fddfb51f-dc22-4d7a-91d2-3d913d56a7d4_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-2-2",
+    "severity": "P2",
+    "test_id": "CONC-2-2",
+    "title": "Journey Concurrency 2 Worker 2 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (CONC-2-2)"
+    ],
+    "evidence": [
+      "requests/CONC-2-2_create_req.json",
+      "journeys/CONC-2-2_8041b0ee-9f80-474c-b280-2eb991a9614d_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-2-1",
+    "severity": "P2",
+    "test_id": "CONC-2-1",
+    "title": "Journey Concurrency 2 Worker 1 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (CONC-2-1)"
+    ],
+    "evidence": [
+      "requests/CONC-2-1_create_req.json",
+      "journeys/CONC-2-1_8aaf7f5c-8878-4d15-8f1b-2963127f9593_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-4-3",
+    "severity": "P2",
+    "test_id": "CONC-4-3",
+    "title": "Journey Concurrency 4 Worker 3 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (CONC-4-3)"
+    ],
+    "evidence": [
+      "requests/CONC-4-3_create_req.json",
+      "journeys/CONC-4-3_b29e2045-2919-467f-b519-40076dc38aec_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-4-2",
+    "severity": "P2",
+    "test_id": "CONC-4-2",
+    "title": "Journey Concurrency 4 Worker 2 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (CONC-4-2)"
+    ],
+    "evidence": [
+      "requests/CONC-4-2_create_req.json",
+      "journeys/CONC-4-2_ddb0947f-2181-440e-8ac0-892e0dfad163_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-4-1",
+    "severity": "P2",
+    "test_id": "CONC-4-1",
+    "title": "Journey Concurrency 4 Worker 1 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (CONC-4-1)"
+    ],
+    "evidence": [
+      "requests/CONC-4-1_create_req.json",
+      "journeys/CONC-4-1_47e28068-7384-4d96-a1d0-a07e1d15f509_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-CONC-4-4",
+    "severity": "P2",
+    "test_id": "CONC-4-4",
+    "title": "Journey Concurrency 4 Worker 4 ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (CONC-4-4)"
+    ],
+    "evidence": [
+      "requests/CONC-4-4_create_req.json",
+      "journeys/CONC-4-4_ff92c732-9d99-484a-a95c-5a93dbe94686_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  }
+]

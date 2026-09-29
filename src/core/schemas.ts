@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { NavigationPolicySchema } from "../journey/types.js";
 
 const idPattern = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
 
@@ -39,11 +40,14 @@ export const TesterProfileSchema = z
   })
   .strict();
 
+export { NavigationPolicySchema };
+
 export const AppTargetSchema = z
   .object({
     name: z.string().min(1),
     baseUrl: z.string().url(),
     allowedOrigins: z.array(z.string().url()).optional(),
+    navigationPolicy: NavigationPolicySchema.optional(),
   })
   .strict();
 

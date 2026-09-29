@@ -90,6 +90,7 @@ export async function runJourney(
   const allowedOrigins = allowedOriginsFor(
     options.journey.app.baseUrl,
     options.journey.app.allowedOrigins,
+    options.journey.app.navigationPolicy,
   );
   const recorder = new EventRecorder({ eventsPath, startedAt });
   const browserEnvironment = mergeBrowserEnvironments(

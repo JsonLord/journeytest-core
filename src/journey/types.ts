@@ -43,6 +43,13 @@ export const AgentDecisionSchema = z.object({
   }
 });
 
+export const NavigationPolicySchema = z.enum([
+  "same-origin",
+  "same-site",
+  "public-http",
+  "explicit-allowlist",
+]);
+
 export const JourneyRequestSchema = z.object({
   url: z.string().url(),
   goal: z.string().min(1),
@@ -55,6 +62,8 @@ export const JourneyRequestSchema = z.object({
   cognitionProfile: z.enum(["local-cloud", "local-spark-cloud", "dual-laya-cloud", "dual-laya-spark-cloud"]).optional(),
   cognitionOptions: z.object({ hostedVerification: z.boolean().optional(), vision: z.boolean().optional(), cloudTerminalVerification: z.boolean().optional() }).strict().optional(),
   successCriteria: z.array(SuccessCriterionSchema).max(12).default([]),
+  navigationPolicy: NavigationPolicySchema.optional(),
+  allowedDomains: z.array(z.string()).optional(),
 }).strict();
 
 export const JourneyStepSchema = z.object({
