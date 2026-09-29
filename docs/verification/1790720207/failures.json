@@ -1,0 +1,82 @@
+[
+  {
+    "id": "BUG-JRN-001",
+    "severity": "P2",
+    "test_id": "JRN-001",
+    "title": "Journey Deterministic Example Domain Journey ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (JRN-001)"
+    ],
+    "evidence": [
+      "requests/JRN-001_create_req.json",
+      "journeys/JRN-001_b0361247-54f3-4093-a264-7434cca140e8_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-TAOS-001",
+    "severity": "P2",
+    "test_id": "TAOS-001",
+    "title": "Journey TAOS Pricing Discovery ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (TAOS-001)"
+    ],
+    "evidence": [
+      "requests/TAOS-001_create_req.json",
+      "journeys/TAOS-001_25f5cd62-1b54-4d00-8fbb-d5a8edff4f62_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-HEROKU-001",
+    "severity": "P2",
+    "test_id": "HEROKU-001",
+    "title": "Journey The Internet Dropdown Selection ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (HEROKU-001)"
+    ],
+    "evidence": [
+      "requests/HEROKU-001_create_req.json",
+      "journeys/HEROKU-001_b8e9ec4e-df68-4c04-8483-5873c19c6f1c_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-WIKI-001",
+    "severity": "P2",
+    "test_id": "WIKI-001",
+    "title": "Journey Wikipedia AI Search ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (WIKI-001)"
+    ],
+    "evidence": [
+      "requests/WIKI-001_create_req.json",
+      "journeys/WIKI-001_714731aa-8f01-4a8b-853c-ad562011acd3_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  },
+  {
+    "id": "BUG-JRN-002",
+    "severity": "P2",
+    "test_id": "JRN-002",
+    "title": "Journey Max steps termination test ended in failed",
+    "expected": "status: completed",
+    "actual": "status: failed",
+    "reproduction": [
+      "POST /api/v1/journeys (JRN-002)"
+    ],
+    "evidence": [
+      "requests/JRN-002_create_req.json",
+      "journeys/JRN-002_e9b46204-6900-4c13-ab74-9f3e78528fcd_status.json"
+    ],
+    "suspected_component": "journey_runner"
+  }
+]

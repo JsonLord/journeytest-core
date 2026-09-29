@@ -86,9 +86,17 @@ function compactInput(input: ReasoningAssessmentInput) {
   return { goal: input.state.goal, success_criteria: input.state.success_criteria, subgoal: input.state.subgoal, trigger: input.trigger, page: { url: input.observation.url, title: input.observation.title, visible_text: input.observation.visibleText?.slice(0, 3000), controls: input.observation.elements.slice(0, 30).map(({ role, name, enabled, value }) => ({ role, name, enabled, value })) }, recent_actions: input.recentActions.slice(-5), laya_decision: input.layaDecision, progress: input.progress };
 }
 
-export function evaluateSuccessCriteria(criteria: SuccessCriterion[], observation: Observation): { result: "yes" | "no" | "ambiguous"; criteria: Array<{ criterion: SuccessCriterion; satisfied: boolean | null; evidence: string }> } {
-  if (!criteria.length) return { result: "ambiguous", criteria: [] };
-  const checked = criteria.map(criterion => {
+export function evaluateSuccessCriteria(criteria: SuccessCriterion[], observation: Observation, goal?: string): { result: "yes" | "no" | "ambiguous"; criteria: Array<{ criterion: SuccessCriterion; satisfied: boolean | null; evidence: string }> } {
+  let effectiveCriteria = [...criteria];
+  if (!effectiveCriteria.length && goal) {
+    const match = goal.match(/Verify\s+["']?([^"'\n]+?)["']?\s+(?:text|page|on page)/i) ?? goal.match(/Verify\s+["']?([^"'\n]+?)["']?/i);
+    if (match && match[1] && match[1].length >= 3) {
+      effectiveCriteria = [{ type: "visible_text", value: match[1].trim() }];
+    }
+  }
+  if (!effectiveCriteria.length) return { result: "ambiguous", criteria: [] };
+  const criteriaList = effectiveCriteria;
+  const checked = criteriaList.map(criterion => {
     if (criterion.type === "selector_present") { const satisfied = observation.elements.some(element => element.ref === criterion.value); return { criterion, satisfied, evidence: `observed element ref: ${JSON.stringify(criterion.value)}` }; }
     const actual = criterion.type.startsWith("url_") ? observation.url : observation.visibleText ?? "";
     const satisfied = criterion.type === "url_equals" ? actual === criterion.value : actual.toLocaleLowerCase().includes(criterion.value.toLocaleLowerCase());

@@ -4,6 +4,7 @@ import type { BrowserDriver } from "../drivers/types.js";
 import { evaluateSuccessCriteria, type ReasoningAssessment, type ReasoningAssessmentInput, type ReasoningController, type ReasoningResponse, type ReasoningState, type ReasoningTrigger, type ReasoningVerdict } from "./reasoning.js";
 import type { CognitionEvidence, CognitionRouter } from "./cognition.js";
 import { AgentDecisionSchema, JourneyRequestSchema, JourneyResultSchema, type AgentDecision, type JourneyAgent, type JourneyContext, type JourneyResult, type JourneyStep, type Observation, type ValueProvider } from "./types.js";
+import { allowedOriginsFor } from "../utils/url.js";
 
 export interface JourneyRunnerOptions { driver: BrowserDriver; agent?: JourneyAgent; cognitionRouter?: CognitionRouter; outputDir: string; valueProvider?: ValueProvider; reasoningController?: ReasoningController; reasoningCheckpointEveryNSteps?: number; noProgressThreshold?: number }
 
@@ -26,7 +27,8 @@ export class JourneyRunner {
     };
     try {
       abort();
-      await this.options.driver.start({ runId: id, runDir, baseUrl: request.url, allowedOrigins: [new URL(request.url).origin], sessionName: id });
+      const allowedOrigins = allowedOriginsFor(request.url, request.allowedDomains, request.navigationPolicy);
+      await this.options.driver.start({ runId: id, runDir, baseUrl: request.url, allowedOrigins, sessionName: id });
       if (request.trace) { if (!this.options.driver.startTrace || !this.options.driver.stopTrace) throw new Error("Browser driver does not support trace capture"); await this.options.driver.startTrace(tracePath); traceStarted = true; }
       await this.options.driver.open(request.url);
       if (this.options.cognitionRouter) { const response = await this.options.cognitionRouter.initializeJourney({ goal: request.goal, successCriteria: request.successCriteria, context: request.context, signal }); reasoningState = response.value; recordReasoning("initialization", response); }
@@ -36,7 +38,7 @@ export class JourneyRunner {
         abort(); const stepStarted = Date.now(); const observationStarted = Date.now(); const observation = await observe(this.options.driver); const observationMs = Date.now() - observationStarted;
         if (previousObservation && previousObservation.url === observation.url && previousObservation.visibleText === observation.visibleText) noProgressSteps++; else noProgressSteps = 0;
         const candidates = observation.elements.map((element, index) => ({ index, ref: element.ref, role: element.role, name: element.name, operations: element.operations }));
-        const observedSuccess = evaluateSuccessCriteria(reasoningState.success_criteria, observation);
+        const observedSuccess = evaluateSuccessCriteria(reasoningState.success_criteria, observation, reasoningState.goal);
         if (observedSuccess.result === "yes") {
           lastAssessment = { decision: "DONE", goal_satisfied: true, blocked: false, progress: "complete", reason_code: "deterministic_criteria_met", confidence: 1 };
           verdict = { goal_satisfied: true, blocked: false, confidence: 1, criteria: observedSuccess.criteria, reason_code: "deterministic_criteria_met" };
@@ -59,7 +61,7 @@ export class JourneyRunner {
         const stuck = repeatedActionCount >= (this.options.noProgressThreshold ?? 3) || noProgressSteps >= (this.options.noProgressThreshold ?? 3);
         const lowConfidence = decision.confidence < request.confidenceThreshold;
         if (candidate || periodic || stuck || lowConfidence) {
-          const deterministic = candidate ? evaluateSuccessCriteria(reasoningState.success_criteria, observation) : undefined;
+          const deterministic = candidate ? evaluateSuccessCriteria(reasoningState.success_criteria, observation, reasoningState.goal) : undefined;
           if (decision.operation === "DONE" && deterministic?.result === "yes") {
             lastAssessment = { decision: "DONE", goal_satisfied: true, blocked: false, progress: "complete", reason_code: "deterministic_criteria_met", confidence: 1 };
             verdict = { goal_satisfied: true, blocked: false, confidence: 1, criteria: deterministic.criteria, reason_code: "deterministic_criteria_met" };

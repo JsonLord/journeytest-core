@@ -1,0 +1,30 @@
+{
+  "id": "python-docs",
+  "title": "Python Documentation Discovery",
+  "app": {
+    "name": "Python.org",
+    "baseUrl": "https://www.python.org/",
+    "navigationPolicy": "public-http"
+  },
+  "testerProfile": "admin",
+  "objective": "Find the Python documentation section.",
+  "tasks": [
+    {
+      "id": "open-docs",
+      "instruction": "Navigate to Python documentation.",
+      "expectedOutcome": "Python documentation page is loaded."
+    }
+  ],
+  "passCriteria": [
+    {
+      "id": "docs-loaded",
+      "statement": "Python documentation header or content is visible."
+    }
+  ],
+  "failCriteria": [
+    {
+      "id": "docs-not-loaded",
+      "statement": "Python documentation could not be opened."
+    }
+  ]
+}

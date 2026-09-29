@@ -694,7 +694,7 @@ export async function runCli(
       ) => {
         if (options.url || options.goal) {
           if (!options.url || !options.goal) throw new Error("Service runs require both --url and --goal.");
-          await assertSafeJourneyNetwork(options.url, options.allowedDomain); await assertSafeRedirectChain(options.url, options.allowedDomain);
+          await assertSafeJourneyNetwork(options.url, { allowedDomains: options.allowedDomain }); await assertSafeRedirectChain(options.url, { allowedDomains: options.allowedDomain });
           const mode = resolveLayaMode(options.layaMode); if (mode === "mock") throw new Error("CLI does not silently substitute mock inference.");
           const managed = mode === "embedded" ? new ManagedLayaService() : undefined; await managed?.start();
           const runtime = createJourneyRuntime({ outputDir: options.output ?? options.out, model: options.model, endpoint: managed?.endpoint, cognitionOverrides: options.cognitionProfile ? { COGNITION_PROFILE: options.cognitionProfile } : undefined }); await runtime.backend.start();

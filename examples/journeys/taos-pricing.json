@@ -1,0 +1,30 @@
+{
+  "id": "taos-pricing",
+  "title": "TAOS Pricing Discovery",
+  "app": {
+    "name": "TAOS HQ",
+    "baseUrl": "https://taoshq.com/",
+    "navigationPolicy": "public-http"
+  },
+  "testerProfile": "admin",
+  "objective": "Find the pricing information on TAOS HQ.",
+  "tasks": [
+    {
+      "id": "find-pricing",
+      "instruction": "Navigate to the pricing section on TAOS HQ.",
+      "expectedOutcome": "Pricing plan details are visible."
+    }
+  ],
+  "passCriteria": [
+    {
+      "id": "pricing-visible",
+      "statement": "Pricing or plan details are displayed on screen."
+    }
+  ],
+  "failCriteria": [
+    {
+      "id": "pricing-not-found",
+      "statement": "Pricing information could not be located."
+    }
+  ]
+}
