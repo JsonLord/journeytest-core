@@ -1,5 +1,12 @@
 # Documentation Log
 
+## 2026-09-29
+
+- Hardened the Hugging Face deployment runbook with token-safe authentication,
+  remote-inventory and clean-sync steps, bounded log monitoring, deployed-SHA
+  verification, public readiness checks, and an explicit no-token evidence
+  boundary.
+
 ## 2026-09-28
 
 - Reconciled the contradictory PR 8 live campaign, classified edge, runtime,
