@@ -63,6 +63,15 @@ default Laya checkpoint revision, installs the CPU-only PyTorch wheel, pins the
 Gradio/FastAPI/HTTPX/Uvicorn versions in `python/requirements-space.txt`, and
 includes a container health check.
 
+Operational deployment uses a clean `hf upload` synchronization only after the
+target identifier and remote inventory have been checked. An upload is not
+deployment proof: operators compare the Space metadata SHA, monitor bounded
+build and run log streams, wait for the `RUNNING` stage, and validate `/health`,
+`/api-docs`, and `/api/v1/openapi.json` on the public Space host. `Agent.md`
+contains the exact commands and troubleshooting order. Authentication always
+comes from `HF_TOKEN`; without it, public endpoint checks can assess the
+currently served revision but cannot prove that the local revision was uploaded.
+
 ## Cognition settings
 
 The Gradio header includes a Settings accordion with profile selection, backend toggles, endpoint/model fields, masked credential inputs, retry controls, deployment status, and a safe connection test. Profile selection is passed on each subsequent journey. Local deployments may explicitly save `.env.local`; Space deployments instead show Variable/Secret instructions and never attempt persistence. The journey API accepts the safe `cognitionProfile` field, and OpenAPI/`JourneyResult.cognition` describe the selected profile and routing evidence without credentials. See [cognition runtime configuration](cognition-configuration.md).

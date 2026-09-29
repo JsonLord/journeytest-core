@@ -146,7 +146,31 @@ All endpoints listed here appear in `/api-docs` and `/api/v1/openapi.json`.
 ## 3. Deployment Workflow
 
 ### Precondition
-Cleansing the space before deployment can be performed via git push from a clean mirror repository or using `upload_folder` with `delete_patterns='*'`.
+1. Confirm that `HF_TOKEN` is present without printing it:
+   `test -n "${HF_TOKEN:-}"`.
+2. Install or locate the Hugging Face CLI and authenticate non-interactively.
+   `HF_TOKEN` is discovered by the CLI, so `hf auth whoami` validates it without
+   persisting the token. Do not include the token in shell tracing.
+3. Inspect the remote inventory before deleting anything:
+   `curl --fail --silent --show-error -H "Authorization: Bearer $HF_TOKEN"
+   https://huggingface.co/api/spaces/Leon4gr45/nova-right-nav`.
+   The Space is dedicated to this repository, so stale remote files may be
+   removed during the upload. Never perform this cleanup against a target whose
+   identifier has not been checked exactly.
+
+The CLI supports clean synchronization without maintaining a second Git clone:
+
+```bash
+hf upload Leon4gr45/nova-right-nav . . \
+  --repo-type=space \
+  --delete='*' \
+  --token="$HF_TOKEN"
+```
+
+Keep `.hfignore` aligned with the files that must not enter the Space repository,
+and pass matching `--exclude` patterns if the installed CLI does not honor that
+file. Always inspect the upload preview/output for local dependencies, build
+output, credentials, logs, and test evidence before accepting the commit.
 
 ### Standard Deployment Command
 After any code change, run:
@@ -165,3 +189,37 @@ curl -N -H "Authorization: Bearer $HF_TOKEN" "https://huggingface.co/api/spaces/
 ```
 
 Monitor for 300 seconds to confirm the space transitions to running and responds to the `/health` and `/api-docs` endpoints.
+
+Do not infer success from an accepted upload or an HTTP response from the Hub
+API. Record the deployed commit returned by the Space metadata, wait until its
+runtime stage is `RUNNING`, and then verify the public endpoints:
+
+```bash
+curl --fail --show-error --silent \
+  https://Leon4gr45-nova-right-nav.hf.space/health
+curl --fail --show-error --silent --output /dev/null \
+  https://Leon4gr45-nova-right-nav.hf.space/api-docs
+curl --fail --show-error --silent --output /tmp/journeytest-openapi.json \
+  https://Leon4gr45-nova-right-nav.hf.space/api/v1/openapi.json
+```
+
+The build and run log endpoints are SSE streams and normally remain open. Bound
+each observation (for example with `timeout 300 curl -N ...`) and save the logs
+outside the upload set. On failure, fix the repository, commit the fix, upload
+again, and repeat both log scans and all three endpoint checks. A public health
+check can confirm an existing deployment without credentials, but a missing
+`HF_TOKEN` blocks remote cleanup, upload, and authenticated log inspection; do
+not claim that a new revision was deployed in that situation.
+
+### Troubleshooting order
+
+1. **Build failure:** inspect the end of the build stream first and reproduce
+   the failing Docker layer locally when possible.
+2. **Runtime never becomes ready:** inspect the run stream and then the internal
+   health path configured by the Docker `HEALTHCHECK`.
+3. **`/health` works but `/api-docs` fails:** verify both the Node service on
+   port 7861 and the FastAPI proxy on port 7860; the public route is proxied.
+4. **Model startup is slow:** preserve the 180-second container health start
+   period and check model-download/auth messages before increasing it.
+5. **A stale revision is serving:** compare the Hub metadata SHA with the upload
+   result before interpreting endpoint checks as evidence for the new revision.
