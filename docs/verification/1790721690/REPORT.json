@@ -1,0 +1,130 @@
+{
+  "status": "pass_with_findings",
+  "deployment": {
+    "url": "https://leon4gr45-nova-right-nav.hf.space",
+    "timestamp": "1790721690",
+    "commit": "local-working-tree",
+    "cognition_profile": "local-cloud",
+    "reasoning_transport": "openai-compatible",
+    "reasoning_model": "alias-fast",
+    "laya_mode": "auto"
+  },
+  "tests": {
+    "total": 21,
+    "passed": 16,
+    "failed": 5,
+    "warnings": 0,
+    "skipped": 0
+  },
+  "journeys": {
+    "submitted": 8,
+    "accepted": 8,
+    "terminal": 7,
+    "completed": 0,
+    "failed": 7,
+    "cancelled": 1,
+    "behavioral_tests_total": 5,
+    "behavioral_tests_passed": 0,
+    "behavioral_task_success_rate": 0.0
+  },
+  "cognition": {
+    "laya_live_verified": true,
+    "alias_fast_live_verified": true,
+    "laya_system2_loop_verified": true,
+    "local_campaign_components": null
+  },
+  "performance": {
+    "health_rtt_p50_ms": 169.6,
+    "status_rtt_p50_ms": 99.52,
+    "events_rtt_p50_ms": 100.63,
+    "journey_duration_p50_s": 6.7
+  },
+  "security": {
+    "secret_leak_found": false,
+    "ssrf_protection_verified": true,
+    "path_traversal_blocked": true
+  },
+  "failures": [
+    {
+      "id": "BUG-JRN-001",
+      "severity": "P2",
+      "test_id": "JRN-001",
+      "title": "Journey Deterministic Example Domain Journey ended in failed",
+      "expected": "status: completed",
+      "actual": "status: failed",
+      "reproduction": [
+        "POST /api/v1/journeys (JRN-001)"
+      ],
+      "evidence": [
+        "requests/JRN-001_create_req.json",
+        "journeys/JRN-001_a84bc389-e27c-4eb1-99a1-47d21a327f14_status.json"
+      ],
+      "suspected_component": "journey_runner"
+    },
+    {
+      "id": "BUG-TAOS-001",
+      "severity": "P2",
+      "test_id": "TAOS-001",
+      "title": "Journey TAOS Pricing Discovery ended in running",
+      "expected": "status: completed",
+      "actual": "status: running",
+      "reproduction": [
+        "POST /api/v1/journeys (TAOS-001)"
+      ],
+      "evidence": [
+        "requests/TAOS-001_create_req.json",
+        "journeys/TAOS-001_ce6dc337-babe-4635-94d9-c6155807f93d_status.json"
+      ],
+      "suspected_component": "journey_runner"
+    },
+    {
+      "id": "BUG-PY-001",
+      "severity": "P2",
+      "test_id": "PY-001",
+      "title": "Journey Python Documentation Discovery ended in failed",
+      "expected": "status: completed",
+      "actual": "status: failed",
+      "reproduction": [
+        "POST /api/v1/journeys (PY-001)"
+      ],
+      "evidence": [
+        "requests/PY-001_create_req.json",
+        "journeys/PY-001_ce12f705-84da-4648-b43c-fcc9209af3e0_status.json"
+      ],
+      "suspected_component": "journey_runner"
+    },
+    {
+      "id": "BUG-HEROKU-001",
+      "severity": "P2",
+      "test_id": "HEROKU-001",
+      "title": "Journey The Internet Dropdown Selection ended in failed",
+      "expected": "status: completed",
+      "actual": "status: failed",
+      "reproduction": [
+        "POST /api/v1/journeys (HEROKU-001)"
+      ],
+      "evidence": [
+        "requests/HEROKU-001_create_req.json",
+        "journeys/HEROKU-001_113f3a34-87b6-49a8-a468-97418e2e31f5_status.json"
+      ],
+      "suspected_component": "journey_runner"
+    },
+    {
+      "id": "BUG-WIKI-001",
+      "severity": "P2",
+      "test_id": "WIKI-001",
+      "title": "Journey Wikipedia AI Search ended in failed",
+      "expected": "status: completed",
+      "actual": "status: failed",
+      "reproduction": [
+        "POST /api/v1/journeys (WIKI-001)"
+      ],
+      "evidence": [
+        "requests/WIKI-001_create_req.json",
+        "journeys/WIKI-001_c18aceb5-3d3f-4923-b27b-50dda9be39a6_status.json"
+      ],
+      "suspected_component": "journey_runner"
+    }
+  ],
+  "maturity": "integration beta"
+}

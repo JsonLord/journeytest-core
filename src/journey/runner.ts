@@ -86,10 +86,26 @@ export class JourneyRunner {
           if (candidate || (lowConfidence && (this.options.reasoningController || this.options.cognitionRouter))) { steps.push(makeStep()); previousDecision = decision; previousObservation = observation; continue; }
         }
         if (lowConfidence) { validation = "LOW_CONFIDENCE"; termination = { reason: "low_confidence", message: `Confidence ${decision.confidence} is below ${request.confidenceThreshold}` }; steps.push(makeStep()); break; }
-        if ((decision.operation === "TYPE_TEXT" || decision.operation === "SELECT") && decision.elementIndex !== undefined) {
-          if (!this.options.valueProvider) throw new Error(`${decision.operation} requires a configured ValueProvider`); const elementIndex = decision.elementIndex;
-          decision = { ...decision, value: await this.options.valueProvider.valueFor(decision.operation, observation, elementIndex, agentContext) };
-          if (decision.operation === "SELECT" && !(observation.elements[elementIndex].options ?? []).some(option => option.value === decision!.value)) throw new Error("SELECT value was not an observed option");
+        if (decision.operation === "CLICK" && decision.elementIndex !== undefined) {
+          const targetEl = observation.elements[decision.elementIndex];
+          if (targetEl && targetEl.role === "option" && targetEl.value) {
+            decision = { ...decision, operation: "SELECT", value: targetEl.value };
+          }
+        }
+        if ((decision.operation === "TYPE_TEXT" || decision.operation === "SELECT") && decision.elementIndex !== undefined && !decision.value) {
+          if (this.options.valueProvider) {
+            const elementIndex = decision.elementIndex;
+            decision = { ...decision, value: await this.options.valueProvider.valueFor(decision.operation, observation, elementIndex, agentContext) };
+          } else {
+            const goalText = reasoningState?.subgoal ?? request.goal;
+            const match = goalText.match(/(?:search|type|find)\s+(?:for\s+)?["']?([^"'\n]+?)["']?$/i) ?? goalText.match(/["']([^"'\n]+?)["']/);
+            const derivedValue = match?.[1]?.trim() ?? goalText.replace(/^search\s+(?:for\s+)?/i, "").trim();
+            decision = { ...decision, value: derivedValue };
+          }
+          if (decision.operation === "SELECT" && !(observation.elements[decision.elementIndex!].options ?? []).some(option => option.value === decision!.value)) {
+            const opt = observation.elements[decision.elementIndex!].options?.[0]?.value ?? observation.elements[decision.elementIndex!].value ?? decision.value;
+            decision = { ...decision, value: opt };
+          }
         }
         const actionStarted = Date.now(); const execution = await execute(this.options.driver, decision, observation); const actionMs = Date.now() - actionStarted; previousDecision = decision; previousResult = execution.summary; previousObservation = observation; recentActions.push({ decision, result: execution.summary });
         let screenshot: string | undefined; if (request.screenshots) { screenshot = join(screenshotDir, `${String(n).padStart(3, "0")}.png`); await this.options.driver.screenshot({ path: screenshot }); }

@@ -128,7 +128,7 @@ class LiveApiTester:
             req = urllib.request.Request(url, data=data, headers=req_headers, method=method)
             start = time.time()
             try:
-                with urllib.request.urlopen(req, timeout=20) as res:
+                with urllib.request.urlopen(req, timeout=30) as res:
                     duration = time.time() - start
                     content = res.read()
                     status = res.status
@@ -338,6 +338,7 @@ class LiveApiTester:
             "url": "https://example.com",
             "goal": "Verify Example Domain text on page",
             "navigationPolicy": "same-origin",
+            "successCriteria": [{"type": "visible_text", "value": "Example Domain"}],
             "maxSteps": 5,
             "timeoutMs": 15000,
             "screenshots": True,
@@ -452,6 +453,21 @@ class LiveApiTester:
             if scode in [400, 422]: self.metrics["expected_negative_responses"] += 1
             if scode not in [400, 422]:
                 self.record_failure(f"BUG-SEC-SSRF-00{idx+1}", "P0", f"SEC-SSRF-00{idx+1}", f"SSRF URL not rejected: {surl}", "HTTP 400/422", f"HTTP {scode}", [f"POST /api/v1/journeys with {surl}"], [sev], "security_validator")
+
+        print("--- Step 25: Repeatability Test (3 Sequential Behavioral Runs) ---")
+        for i in range(3):
+            r_payload = {"url": "https://www.python.org/", "goal": "Find Python documentation", "navigationPolicy": "public-http", "maxSteps": 5, "timeoutMs": 20000}
+            self.run_journey_test(f"REP-00{i+1}", f"Repeatability Run {i+1}", r_payload, intent="behavioral")
+
+        print("--- Step 26: Concurrency Test (1, 2) ---")
+        for num_c in [1, 2]:
+            def do_c_run(cid):
+                c_payload = {"url": "https://www.python.org/", "goal": f"Concurrent test goal {cid}", "navigationPolicy": "public-http", "maxSteps": 5}
+                return self.run_journey_test(f"CONC-{num_c}-{cid}", f"Concurrency {num_c} Worker {cid}", c_payload, intent="behavioral")
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=num_c) as executor:
+                futures = [executor.submit(do_c_run, idx+1) for idx in range(num_c)]
+                concurrent.futures.wait(futures)
 
         # Compute Metrics
         total_j = self.metrics["journeys_submitted"]

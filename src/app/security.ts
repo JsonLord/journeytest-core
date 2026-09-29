@@ -9,7 +9,15 @@ export interface NavigationOptions {
   baseUrl?: string;
 }
 
-export function assertSafeJourneyUrl(raw: string, options: NavigationOptions = {}) {
+function parseNavigationOptions(options: NavigationOptions | string[] = {}): NavigationOptions {
+  if (Array.isArray(options)) {
+    return { allowedDomains: options };
+  }
+  return options;
+}
+
+export function assertSafeJourneyUrl(raw: string, optionsArg: NavigationOptions | string[] = {}) {
+  const options = parseNavigationOptions(optionsArg);
   const url = new URL(raw);
   if (url.protocol !== "http:" && url.protocol !== "https:") {
     throw new Error("Only http(s) journey URLs are allowed");
@@ -64,12 +72,12 @@ export function assertSafeJourneyUrl(raw: string, options: NavigationOptions = {
       throw new Error(`Navigation to "${raw}" is outside allowed same-site: ${siteA}`);
     }
   } else if (policy === "public-http") {
-    // Allowed to visit any public HTTP/HTTPS destination passing SSRF checks
     return;
   }
 }
 
-export async function assertSafeJourneyNetwork(raw: string, options: NavigationOptions = {}, resolver: typeof lookup = lookup) {
+export async function assertSafeJourneyNetwork(raw: string, optionsArg: NavigationOptions | string[] = {}, resolver: typeof lookup = lookup) {
+  const options = parseNavigationOptions(optionsArg);
   assertSafeJourneyUrl(raw, options);
   const host = new URL(raw).hostname.replace(/^\[|\]$/g, "");
 
@@ -92,7 +100,8 @@ export async function assertSafeJourneyNetwork(raw: string, options: NavigationO
   }
 }
 
-export async function assertSafeRedirectChain(raw: string, options: NavigationOptions = {}, fetcher: typeof fetch = fetch) {
+export async function assertSafeRedirectChain(raw: string, optionsArg: NavigationOptions | string[] = {}, fetcher: typeof fetch = fetch) {
+  const options = parseNavigationOptions(optionsArg);
   if (process.env.JOURNEYTEST_ALLOW_PRIVATE_NETWORKS === "1") return;
 
   let current = raw;
