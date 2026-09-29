@@ -1,0 +1,16 @@
+{
+  "id": "ee2021d4-e7b1-44d6-880e-bcd7c7c1dd44",
+  "request": {
+    "url": "https://example.com",
+    "goal": "Verify Example Domain text",
+    "context": {},
+    "maxSteps": 2,
+    "timeoutMs": 30000,
+    "screenshots": true,
+    "trace": false,
+    "confidenceThreshold": 0.15,
+    "successCriteria": []
+  },
+  "status": "failed",
+  "started_at": "2026-09-29T08:51:34.731Z"
+}

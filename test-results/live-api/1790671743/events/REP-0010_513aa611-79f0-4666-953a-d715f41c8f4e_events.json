@@ -1,0 +1,51 @@
+[
+  {
+    "type": "reasoning.assessment",
+    "timestamp": "2026-09-29T08:52:01.134Z",
+    "data": {
+      "trigger": "initialization",
+      "provider": "journeytest-openai-compatible",
+      "model": "alias-fast",
+      "latency_ms": 3062,
+      "deterministic_criteria_avoided_call": false
+    }
+  },
+  {
+    "type": "cognition.action",
+    "timestamp": "2026-09-29T08:52:01.656Z",
+    "data": {
+      "system1Backend": "local_laya",
+      "visionUsed": false
+    }
+  },
+  {
+    "type": "reasoning.assessment",
+    "timestamp": "2026-09-29T08:52:01.656Z",
+    "data": {
+      "trigger": "termination_candidate",
+      "provider": "deterministic",
+      "model": "explicit-criteria",
+      "latency_ms": 0,
+      "decision": "CONTINUE",
+      "confidence": 1,
+      "reason_code": "deterministic_criteria_not_met",
+      "deterministic_criteria_avoided_call": true
+    }
+  },
+  {
+    "type": "cognition.action",
+    "timestamp": "2026-09-29T08:52:02.202Z",
+    "data": {
+      "system1Backend": "local_laya",
+      "visionUsed": false
+    }
+  },
+  {
+    "type": "action.executed",
+    "timestamp": "2026-09-29T08:52:02.270Z",
+    "data": {
+      "step": 2,
+      "operation": "CLICK"
+    }
+  }
+]

@@ -1,0 +1,131 @@
+{
+  "schema_version": "1",
+  "journey_id": "c52ffc31-03bf-4349-9f22-5d0302c13f9a",
+  "status": "error",
+  "goal": "Concurrent test goal 2",
+  "start_url": "https://example.com",
+  "final_url": "https://example.com",
+  "duration_ms": 3466,
+  "step_count": 1,
+  "termination": {
+    "reason": "error",
+    "message": "Navigation to \"https://www.iana.org\" is outside allowed origins: https://example.com"
+  },
+  "cognition": {
+    "profile": "local-cloud",
+    "evidence": [
+      {
+        "system1Backend": "local_laya",
+        "visionUsed": false
+      }
+    ]
+  },
+  "reasoning": {
+    "state": {
+      "goal": "Concurrent test goal 2",
+      "success_criteria": [],
+      "subgoal": "Verify that the concurrent processes start and finish without errors, confirming they run simultaneously and each reports successful completion."
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "timestamp": "2026-09-29T08:52:56.287Z",
+      "url": "https://example.com/",
+      "candidates": [
+        {
+          "index": 0,
+          "ref": "e1",
+          "role": "link",
+          "name": "Learn more",
+          "operations": [
+            "CLICK"
+          ]
+        }
+      ],
+      "scopedCandidates": [
+        0
+      ],
+      "chunking": [],
+      "decision": {
+        "operation": "CLICK",
+        "elementIndex": 0,
+        "confidence": 0.609,
+        "probability": 0.609,
+        "diagnostics": {
+          "offeredIndices": [
+            0
+          ],
+          "scopedIndices": [
+            0
+          ],
+          "chunking": [],
+          "backend": "laya-torch",
+          "inferenceMs": 464
+        }
+      },
+      "validation": "OK",
+      "execution": {
+        "success": true,
+        "summary": "Clicked e1",
+        "durationMs": 19
+      },
+      "screenshot": "/app/runs/c52ffc31-03bf-4349-9f22-5d0302c13f9a/screenshots/001.png",
+      "timings": {
+        "observationMs": 70,
+        "inferenceMs": 464,
+        "actionMs": 19,
+        "stepMs": 604
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "reasoning.assessment",
+      "timestamp": "2026-09-29T08:52:55.683Z",
+      "data": {
+        "trigger": "initialization",
+        "provider": "journeytest-openai-compatible",
+        "model": "alias-fast",
+        "latency_ms": 1917,
+        "deterministic_criteria_avoided_call": false
+      }
+    },
+    {
+      "type": "cognition.action",
+      "timestamp": "2026-09-29T08:52:56.220Z",
+      "data": {
+        "system1Backend": "local_laya",
+        "visionUsed": false
+      }
+    },
+    {
+      "type": "action.executed",
+      "timestamp": "2026-09-29T08:52:56.287Z",
+      "data": {
+        "step": 1,
+        "operation": "CLICK"
+      }
+    }
+  ],
+  "artifacts": {
+    "result": "/app/runs/c52ffc31-03bf-4349-9f22-5d0302c13f9a/journey-result.json",
+    "screenshots": [
+      "/app/runs/c52ffc31-03bf-4349-9f22-5d0302c13f9a/screenshots/001.png"
+    ]
+  },
+  "metrics": {
+    "journey_ms": 3466,
+    "laya_calls": 1,
+    "laya_total_ms": 464,
+    "reasoning_calls": 1,
+    "reasoning_total_ms": 1917,
+    "reasoning_tokens": 0,
+    "reasoning_cost": 0
+  },
+  "context": {},
+  "agent": {
+    "type": "cognition-router",
+    "backend": "routed"
+  }
+}

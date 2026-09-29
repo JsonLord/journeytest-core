@@ -1,0 +1,21 @@
+[
+  {
+    "type": "reasoning.assessment",
+    "timestamp": "2026-09-29T08:51:02.143Z",
+    "data": {
+      "trigger": "initialization",
+      "provider": "journeytest-openai-compatible",
+      "model": "alias-fast",
+      "latency_ms": 2786,
+      "deterministic_criteria_avoided_call": false
+    }
+  },
+  {
+    "type": "cognition.action",
+    "timestamp": "2026-09-29T08:51:02.720Z",
+    "data": {
+      "system1Backend": "local_laya",
+      "visionUsed": false
+    }
+  }
+]

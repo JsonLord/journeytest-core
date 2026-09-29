@@ -1,0 +1,75 @@
+{
+  "schema_version": "1",
+  "journey_id": "7dc5a001-9b1f-4162-8e22-68dec4b0aa2d",
+  "status": "error",
+  "goal": "Verify text Example Domain",
+  "start_url": "https://example.com",
+  "final_url": "https://example.com",
+  "duration_ms": 33360,
+  "step_count": 0,
+  "termination": {
+    "reason": "error",
+    "message": "agent-browser command failed: agent-browser --session 7dc5a001-9b1f-4162-8e22-68dec4b0aa2d screenshot /app/runs/7dc5a001-9b1f-4162-8e22-68dec4b0aa2d/screenshots/001.png\nmessage: Command failed: agent-browser --session 7dc5a001-9b1f-4162-8e22-68dec4b0aa2d screenshot /app/runs/7dc5a001-9b1f-4162-8e22-68dec4b0aa2d/screenshots/001.png\n\nexit code: null\nsignal: SIGTERM"
+  },
+  "cognition": {
+    "profile": "local-cloud",
+    "evidence": [
+      {
+        "system1Backend": "local_laya",
+        "visionUsed": false
+      }
+    ]
+  },
+  "reasoning": {
+    "state": {
+      "goal": "Verify text Example Domain",
+      "success_criteria": [
+        {
+          "type": "visible_text",
+          "value": "Example Domain"
+        }
+      ],
+      "subgoal": "Confirm that the page displays the visible text \"Example Domain\"."
+    }
+  },
+  "steps": [],
+  "events": [
+    {
+      "type": "reasoning.assessment",
+      "timestamp": "2026-09-29T14:14:30.556Z",
+      "data": {
+        "trigger": "initialization",
+        "provider": "journeytest-openai-compatible",
+        "model": "alias-fast",
+        "latency_ms": 1889,
+        "deterministic_criteria_avoided_call": false
+      }
+    },
+    {
+      "type": "cognition.action",
+      "timestamp": "2026-09-29T14:14:31.137Z",
+      "data": {
+        "system1Backend": "local_laya",
+        "visionUsed": false
+      }
+    }
+  ],
+  "artifacts": {
+    "result": "/app/runs/7dc5a001-9b1f-4162-8e22-68dec4b0aa2d/journey-result.json",
+    "screenshots": []
+  },
+  "metrics": {
+    "journey_ms": 33360,
+    "laya_calls": 1,
+    "laya_total_ms": 507,
+    "reasoning_calls": 1,
+    "reasoning_total_ms": 1889,
+    "reasoning_tokens": 0,
+    "reasoning_cost": 0
+  },
+  "context": {},
+  "agent": {
+    "type": "cognition-router",
+    "backend": "routed"
+  }
+}

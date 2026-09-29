@@ -1,0 +1,18 @@
+{
+  "id": "7ac7472b-573f-4468-81fa-09ce76170144",
+  "request": {
+    "url": "https://example.com",
+    "goal": "Concurrent test goal 1",
+    "context": {},
+    "maxSteps": 2,
+    "timeoutMs": 120000,
+    "screenshots": true,
+    "trace": false,
+    "confidenceThreshold": 0.15,
+    "successCriteria": []
+  },
+  "status": "failed",
+  "queued_at": "2026-09-29T08:52:10.836Z",
+  "started_at": "2026-09-29T08:52:44.090Z",
+  "queue_wait_ms": 33254
+}

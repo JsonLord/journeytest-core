@@ -1,0 +1,18 @@
+{
+  "id": "8889e7a7-68a2-472f-9ceb-9cef5aae6b9f",
+  "request": {
+    "url": "https://example.com",
+    "goal": "Navigate around Example Domain",
+    "context": {},
+    "maxSteps": 10,
+    "timeoutMs": 120000,
+    "screenshots": true,
+    "trace": false,
+    "confidenceThreshold": 0.15,
+    "successCriteria": []
+  },
+  "status": "cancelled",
+  "started_at": "2026-09-29T14:15:06.680Z",
+  "cancel_requested_at": "2026-09-29T14:15:07.338Z",
+  "cancelled_at": "2026-09-29T14:15:11.345Z"
+}

@@ -1,0 +1,79 @@
+{
+  "schema_version": "1",
+  "journey_id": "3d3e6c6c-c297-4ff9-8714-433e8082fc4b",
+  "status": "error",
+  "goal": "Verify Example Domain text",
+  "start_url": "https://example.com",
+  "final_url": "https://example.com",
+  "duration_ms": 34221,
+  "step_count": 0,
+  "termination": {
+    "reason": "error",
+    "message": "agent-browser command failed: agent-browser --session 3d3e6c6c-c297-4ff9-8714-433e8082fc4b screenshot /app/runs/3d3e6c6c-c297-4ff9-8714-433e8082fc4b/screenshots/001.png\nmessage: Command failed: agent-browser --session 3d3e6c6c-c297-4ff9-8714-433e8082fc4b screenshot /app/runs/3d3e6c6c-c297-4ff9-8714-433e8082fc4b/screenshots/001.png\n\nexit code: null\nsignal: SIGTERM"
+  },
+  "cognition": {
+    "profile": "local-cloud",
+    "evidence": [
+      {
+        "system1Backend": "local_laya",
+        "visionUsed": false
+      }
+    ]
+  },
+  "reasoning": {
+    "state": {
+      "goal": "Verify Example Domain text",
+      "success_criteria": [
+        {
+          "type": "url_contains",
+          "value": "example.com"
+        },
+        {
+          "type": "visible_text",
+          "value": "Example Domain"
+        }
+      ],
+      "subgoal": "Navigate to http://example.com and confirm that the page visibly contains the text \"Example Domain\"."
+    }
+  },
+  "steps": [],
+  "events": [
+    {
+      "type": "reasoning.assessment",
+      "timestamp": "2026-09-29T08:51:02.143Z",
+      "data": {
+        "trigger": "initialization",
+        "provider": "journeytest-openai-compatible",
+        "model": "alias-fast",
+        "latency_ms": 2786,
+        "deterministic_criteria_avoided_call": false
+      }
+    },
+    {
+      "type": "cognition.action",
+      "timestamp": "2026-09-29T08:51:02.720Z",
+      "data": {
+        "system1Backend": "local_laya",
+        "visionUsed": false
+      }
+    }
+  ],
+  "artifacts": {
+    "result": "/app/runs/3d3e6c6c-c297-4ff9-8714-433e8082fc4b/journey-result.json",
+    "screenshots": []
+  },
+  "metrics": {
+    "journey_ms": 34221,
+    "laya_calls": 1,
+    "laya_total_ms": 513,
+    "reasoning_calls": 1,
+    "reasoning_total_ms": 2786,
+    "reasoning_tokens": 0,
+    "reasoning_cost": 0
+  },
+  "context": {},
+  "agent": {
+    "type": "cognition-router",
+    "backend": "routed"
+  }
+}

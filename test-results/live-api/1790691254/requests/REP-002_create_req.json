@@ -1,0 +1,6 @@
+{
+  "url": "https://example.com",
+  "goal": "Verify Example Domain text",
+  "maxSteps": 2,
+  "timeoutMs": 30000
+}

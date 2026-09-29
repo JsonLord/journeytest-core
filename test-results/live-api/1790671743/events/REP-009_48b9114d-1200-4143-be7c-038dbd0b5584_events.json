@@ -1,0 +1,29 @@
+[
+  {
+    "type": "reasoning.assessment",
+    "timestamp": "2026-09-29T08:51:55.209Z",
+    "data": {
+      "trigger": "initialization",
+      "provider": "journeytest-openai-compatible",
+      "model": "alias-fast",
+      "latency_ms": 1748,
+      "deterministic_criteria_avoided_call": false
+    }
+  },
+  {
+    "type": "cognition.action",
+    "timestamp": "2026-09-29T08:51:55.766Z",
+    "data": {
+      "system1Backend": "local_laya",
+      "visionUsed": false
+    }
+  },
+  {
+    "type": "action.executed",
+    "timestamp": "2026-09-29T08:51:55.842Z",
+    "data": {
+      "step": 1,
+      "operation": "CLICK"
+    }
+  }
+]

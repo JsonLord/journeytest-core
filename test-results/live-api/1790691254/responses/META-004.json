@@ -1,0 +1,832 @@
+{
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "JourneyTest API",
+      "version": "1.0.0",
+      "description": "Asynchronous JourneyTest service. All execution uses the shared JourneyService."
+    },
+    "paths": {
+      "/health": {
+        "get": {
+          "summary": "Service health",
+          "responses": {
+            "200": {
+              "description": "Healthy",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Health"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/v1/health": {
+        "get": {
+          "summary": "Service health",
+          "responses": {
+            "200": {
+              "description": "Healthy",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Health"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/v1/ready": {
+        "get": {
+          "summary": "Laya readiness",
+          "responses": {
+            "200": {
+              "description": "Ready",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Ready"
+                  }
+                }
+              }
+            },
+            "503": {
+              "description": "Not ready",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Ready"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/v1/info": {
+        "get": {
+          "summary": "Runtime information",
+          "responses": {
+            "200": {
+              "description": "Runtime information",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Info"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/v1/journeys": {
+        "post": {
+          "summary": "Create an asynchronous journey",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "url",
+                    "goal"
+                  ],
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "goal": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cognitionProfile": {
+                      "enum": [
+                        "local-cloud",
+                        "local-spark-cloud",
+                        "dual-laya-cloud",
+                        "dual-laya-spark-cloud"
+                      ]
+                    },
+                    "cognitionOptions": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "hostedVerification": {
+                          "type": "boolean"
+                        },
+                        "vision": {
+                          "type": "boolean"
+                        },
+                        "cloudTerminalVerification": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "context": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "maxSteps": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100,
+                      "default": 15
+                    },
+                    "timeoutMs": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "default": 120000
+                    },
+                    "screenshots": {
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "trace": {
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "confidenceThreshold": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "default": 0.15
+                    },
+                    "allowedDomains": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "202": {
+              "description": "Journey accepted",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/JourneyAccepted"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  }
+                }
+              }
+            },
+            "429": {
+              "description": "Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/v1/journeys/{id}": {
+        "get": {
+          "summary": "Get journey status",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Journey status",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/JourneyStatus"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/v1/journeys/{id}/result": {
+        "get": {
+          "summary": "Get JourneyResult v1",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Completed JourneyResult",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/JourneyResult"
+                  }
+                }
+              }
+            },
+            "202": {
+              "description": "Journey pending",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Pending"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/v1/journeys/{id}/events": {
+        "get": {
+          "summary": "Get journey events",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Events",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Event"
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/v1/journeys/{id}/cancel": {
+        "post": {
+          "summary": "Cancel a journey",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "202": {
+              "description": "Cancellation requested",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/JourneyAccepted"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/v1/journeys/{id}/artifacts/{artifact_id}": {
+        "get": {
+          "summary": "Download a known journey artifact",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "artifact_id",
+              "in": "path",
+              "required": true,
+              "description": "result, trace, or screenshot-N",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Artifact bytes",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "image/png": {
+                  "schema": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "Health": {
+          "type": "object",
+          "required": [
+            "ok"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            }
+          }
+        },
+        "Ready": {
+          "type": "object",
+          "required": [
+            "ready",
+            "laya"
+          ],
+          "properties": {
+            "ready": {
+              "type": "boolean"
+            },
+            "laya": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "capacity": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "Info": {
+          "type": "object",
+          "required": [
+            "name",
+            "schema_version",
+            "laya"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "schema_version": {
+              "const": "1"
+            },
+            "model": {
+              "type": "string"
+            },
+            "laya": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "JourneyAccepted": {
+          "type": "object",
+          "required": [
+            "journey_id",
+            "status"
+          ],
+          "properties": {
+            "journey_id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          }
+        },
+        "JourneyStatus": {
+          "type": "object",
+          "required": [
+            "id",
+            "request",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "request": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "url",
+                "goal"
+              ],
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "goal": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "cognitionProfile": {
+                  "enum": [
+                    "local-cloud",
+                    "local-spark-cloud",
+                    "dual-laya-cloud",
+                    "dual-laya-spark-cloud"
+                  ]
+                },
+                "cognitionOptions": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "hostedVerification": {
+                      "type": "boolean"
+                    },
+                    "vision": {
+                      "type": "boolean"
+                    },
+                    "cloudTerminalVerification": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "context": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "maxSteps": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "default": 15
+                },
+                "timeoutMs": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 120000
+                },
+                "screenshots": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "trace": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "confidenceThreshold": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 0.15
+                },
+                "allowedDomains": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "status": {
+              "enum": [
+                "created",
+                "queued",
+                "running",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "queued_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "started_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "queue_wait_ms": {
+              "type": "integer"
+            },
+            "cancel_requested_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "cancelled_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "Pending": {
+          "type": "object",
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            }
+          }
+        },
+        "Event": {
+          "type": "object",
+          "required": [
+            "type",
+            "timestamp"
+          ],
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "data": {}
+          }
+        },
+        "JourneyResult": {
+          "type": "object",
+          "required": [
+            "schema_version",
+            "journey_id",
+            "status",
+            "goal",
+            "start_url",
+            "final_url",
+            "duration_ms",
+            "step_count",
+            "termination",
+            "steps",
+            "events",
+            "artifacts",
+            "metrics",
+            "context",
+            "agent"
+          ],
+          "properties": {
+            "schema_version": {
+              "const": "1"
+            },
+            "journey_id": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "completed",
+                "blocked",
+                "error",
+                "cancelled"
+              ]
+            },
+            "goal": {
+              "type": "string"
+            },
+            "start_url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "final_url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "duration_ms": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "step_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cognition": {
+              "type": "object",
+              "properties": {
+                "profile": {
+                  "enum": [
+                    "local-cloud",
+                    "local-spark-cloud",
+                    "dual-laya-cloud",
+                    "dual-laya-spark-cloud"
+                  ]
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            },
+            "termination": {
+              "type": "object",
+              "required": [
+                "reason"
+              ],
+              "properties": {
+                "reason": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "events": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Event"
+              }
+            },
+            "artifacts": {
+              "type": "object",
+              "required": [
+                "screenshots"
+              ],
+              "properties": {
+                "result": {
+                  "type": "string"
+                },
+                "screenshots": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "trace": {
+                  "type": "string"
+                }
+              }
+            },
+            "metrics": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "context": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "agent": {
+              "type": "object",
+              "required": [
+                "type",
+                "backend"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "backend": {
+                  "type": "string"
+                },
+                "model": {
+                  "type": "string"
+                },
+                "revision": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "Error": {
+          "type": "object",
+          "required": [
+            "error"
+          ],
+          "properties": {
+            "error": {
+              "type": "object",
+              "required": [
+                "code",
+                "message",
+                "retryable"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "retryable": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
