@@ -1,7 +1,0 @@
-{
-  "error": {
-    "code": "INVALID_URL",
-    "message": "Loopback, private, link-local, and metadata addresses are not allowed",
-    "retryable": false
-  }
-}

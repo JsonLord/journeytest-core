@@ -1,6 +1,0 @@
-{
-  "url": "https://example.com",
-  "goal": "Navigate endlessly",
-  "maxSteps": 10,
-  "timeoutMs": 2000
-}

@@ -4,6 +4,7 @@ coverage/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
 runs/
+test-results/
 outputs/
 __pycache__/
 *.pyc
