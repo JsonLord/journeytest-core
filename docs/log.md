@@ -1,5 +1,10 @@
 # Documentation Log
 
+## 2026-09-29
+
+- Made service journeys terminate from already-satisfied observable criteria
+  before requesting a System-1 browser action.
+
 ## 2026-09-28
 
 - Reconciled the contradictory PR 8 live campaign, classified edge, runtime,

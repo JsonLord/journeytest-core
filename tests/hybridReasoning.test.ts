@@ -25,6 +25,11 @@ describe("hybrid journey reasoning", () => {
     const result = await run("done", driver("https://example.test/pricing", "Pricing"), [{ operation: "DONE", confidence: 1 }], reasoner, { url: "https://example.test/pricing", successCriteria: [{ type: "url_contains", value: "/pricing" }, { type: "visible_text", value: "Pricing" }] });
     expect(result.status).toBe("completed"); expect(reasoner.calls).toEqual(["initialize"]); expect(result.metrics.reasoning_calls).toBe(1); expect(result.events.at(-1)?.data).toMatchObject({ deterministic_criteria_avoided_call: true });
   });
+  it("finishes from observable criteria before Laya can take an unnecessary action", async () => {
+    const reasoner = new Reasoner({ decision: "CONTINUE", goal_satisfied: false, blocked: false, progress: "partial", reason_code: "unused", confidence: 1 });
+    const result = await run("already-done", driver("https://example.test/pricing", "Pricing"), [], reasoner, { url: "https://example.test/pricing", successCriteria: [{ type: "url_contains", value: "/pricing" }, { type: "visible_text", value: "Pricing" }] });
+    expect(result.status).toBe("completed"); expect(result.steps).toHaveLength(1); expect(result.steps[0].decision).toBeUndefined(); expect(result.reasoning?.verdict?.reason_code).toBe("deterministic_criteria_met");
+  });
   it("overrides a premature Laya DONE with CONTINUE", async () => {
     const reasoner = new Reasoner({ decision: "CONTINUE", goal_satisfied: false, blocked: false, progress: "partial", next_subgoal: "Use the Pricing navigation link", reason_code: "target_not_reached", confidence: .99 });
     const result = await run("continue", driver(), [{ operation: "DONE", confidence: 1 }, { operation: "WAIT", confidence: 1 }, { operation: "DONE", confidence: 1 }], reasoner, { maxSteps: 2 });
